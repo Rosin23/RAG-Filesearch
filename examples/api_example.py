@@ -42,9 +42,7 @@ class SovDefAPIClient:
             for _, f in files:
                 f.close()
 
-    def search(
-        self, query: str, store: str = "default", model: str = None, **kwargs
-    ):
+    def search(self, query: str, store: str = "default", model: str = None, **kwargs):
         """Search using POST method"""
         payload = {"query": query, "store_name": store}
         if model:

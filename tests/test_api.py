@@ -214,7 +214,10 @@ class TestAPIIntegration:
         # Search
         response = auth_client.post(
             "/search",
-            json={"query": "What is this document about?", "store_name": "integration-test"},
+            json={
+                "query": "What is this document about?",
+                "store_name": "integration-test",
+            },
         )
         assert response.status_code == 200
         search_result = response.json()

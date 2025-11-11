@@ -31,7 +31,7 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=[
-        "google-genai>=0.3.0",
+        "google-generativeai>=0.3.0",
         "pydantic>=2.0.0",
     ],
     extras_require={
