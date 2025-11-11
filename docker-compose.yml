@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  sovdef-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sovdef-filesearch-lite
+    ports:
+      - "8000:8000"
+    environment:
+      # Set these in .env file or export before running
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-50}
+      - UPLOAD_TIMEOUT_SEC=${UPLOAD_TIMEOUT_SEC:-60}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gemini-2.5-flash}
+      - MAX_OUTPUT_TOKENS=${MAX_OUTPUT_TOKENS:-1024}
+      - TEMPERATURE=${TEMPERATURE:-0.5}
+      - MAX_SOURCES=${MAX_SOURCES:-5}
+    volumes:
+      - ./uploads:/tmp/uploads
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - sovdef-network
+
+networks:
+  sovdef-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  data:
