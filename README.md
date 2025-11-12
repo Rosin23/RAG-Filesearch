@@ -157,13 +157,13 @@ help wanted + good first issue labels mark low-barrier contributions.
 - Bugs & features: [GitHub Issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues)
 - Q&A / patterns: [Discussions](https://github.com/flamehaven01/Flamehaven-Filesearch/discussions)
 - Docs & cookbooks: [Wiki](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki)
-- Email: dev@sovdef.ai
+- Email: dev@Flamehaven.ai
 
 ---
 
 ## 📄 License
 
-MIT License © 2025 SovDef Team. See [LICENSE](LICENSE) for details.
+MIT License © 2025 Flamehaven Team. See [LICENSE](LICENSE) for details.
 
 ---
 
