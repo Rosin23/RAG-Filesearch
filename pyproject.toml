@@ -35,7 +35,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "google-generativeai>=0.8.0",
     "pydantic>=2.0.0",
 ]
 
@@ -54,8 +53,12 @@ dev = [
     "mypy>=1.0.0",
     "isort>=5.12.0",
 ]
+google = [
+    "google-generativeai>=0.8.0; python_version >= '3.10'",
+    "google-generativeai>=0.1.0rc1; python_version < '3.10'",
+]
 all = [
-    "flamehaven-filesearch[api,dev]",
+    "flamehaven-filesearch[api,dev,google]",
 ]
 
 [project.urls]
