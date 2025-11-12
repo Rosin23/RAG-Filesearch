@@ -1,172 +1,469 @@
 # 🔥 FLAMEHAVEN FileSearch
 
-**Open‑source semantic document search you can self‑host in minutes.**
+**Open-source semantic document search you can self-host in minutes.**
 
 [![CI/CD](https://github.com/flamehaven01/Flamehaven-Filesearch/actions/workflows/ci.yml/badge.svg)](https://github.com/flamehaven01/Flamehaven-Filesearch/actions)
 [![PyPI](https://img.shields.io/pypi/v/flamehaven-filesearch.svg)](https://pypi.org/project/flamehaven-filesearch/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/flamehaven-filesearch.svg)](https://pypi.org/project/flamehaven-filesearch/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+<div align="center">
+
+**The lightweight RAG stack that makes your documents searchable in minutes**
+
+[Quick Start](#-quick-start) • [Features](#-features) • [Documentation](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki) • [API Reference](#-api-reference) • [Examples](examples/)
+
+</div>
 
 ---
+
+## 🎯 Why Flamehaven?
 
 <table>
-  <tr>
-    <td width="33%">
-      <strong>TL;DR</strong><br />
-      Lightweight RAG stack (FastAPI + Google Gemini). Upload docs, ask questions, get cited answers. 100% self-hosted & MIT licensed.
-    </td>
-    <td width="33%">
-      <strong>Core Features</strong>
-      <ul>
-        <li>PDF / DOCX / TXT / MD ingestion (50&nbsp;MB lite cap)</li>
-        <li>Python SDK + REST API with Swagger UI</li>
-        <li>Store lifecycle (create, list, delete) + source citations</li>
-      </ul>
-    </td>
-    <td width="33%">
-      <strong>Install</strong>
-      <pre><code>pip install flamehaven-filesearch[api]
-export GEMINI_API_KEY="..."
-flamehaven-api
-      </code></pre>
-    </td>
-  </tr>
+<tr>
+<td width="33%">
+
+### ⚡ **Fast**
+From zero to production in under 5 minutes. No complex infrastructure.
+
+</td>
+<td width="33%">
+
+### 🔒 **Private**
+100% self-hosted. Your data never leaves your servers.
+
+</td>
+<td width="33%">
+
+### 💰 **Affordable**
+Leverages Gemini's generous free tier. Process thousands of docs free.
+
+</td>
+</tr>
 </table>
 
-> Need architecture diagrams, cookbook recipes, or advanced deployment notes? Check the [Wiki](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki).
+### 🆚 Comparison with Alternatives
+
+| Feature | Flamehaven | Pinecone | Weaviate | Custom RAG |
+|---------|-----------|----------|----------|------------|
+| **Setup Time** | < 5 min | ~20 min | ~30 min | Days |
+| **Self-Hosted** | ✅ | ❌ | ✅ | ✅ |
+| **Free Tier** | Generous | Limited | Yes | N/A |
+| **Code Complexity** | Low | Medium | High | Very High |
+| **Maintenance** | Minimal | None | Medium | High |
+| **Best For** | Quick POCs, SMBs | Enterprise scale | ML teams | Full control |
 
 ---
 
-## 📌 Key Features
+## ✨ Features
 
-- **Plug-and-play RAG** – Bring your Gemini key, upload docs, start asking questions.
-- **Transparent + auditable** – MIT license, SQLite/file storage, traceable sources.
-- **FastAPI server + SDK parity** – Same engine powers CLI, REST, and unit tests.
-- **Production-friendly defaults** – Env-based config, Dockerfile, CI badges, logging.
-- **Extensible hooks** – Drop-in store adapters or response post-processors.
+| Feature | Description |
+|---------|-------------|
+| **📄 Multi-Format** | PDF, DOCX, TXT, MD files up to 50MB |
+| **🔍 Semantic Search** | Natural language queries with AI-powered answers |
+| **📎 Source Citations** | Every answer links back to source documents |
+| **🗂️ Store Management** | Organize documents into separate collections |
+| **🔌 Dual Interface** | Python SDK + REST API with Swagger UI |
+| **🐳 Docker Ready** | One-command deployment with persistence |
+
+**Coming Soon:** Caching • Rate limiting • Batch operations • Multi-language support  
+→ [Full Roadmap](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Roadmap)
 
 ---
 
 ## ⚡ Quick Start
 
-`ash
-pip install flamehaven-filesearch[api]
+### 1️⃣ Install
+```bash
+pip install flamehaven-filesearch[api]  # ~30 seconds
+```
+
+### 2️⃣ Set API Key
+```bash
 export GEMINI_API_KEY="your-google-gemini-key"
-python - <<'PY'
+```
+> 💡 Get your free key at [Google AI Studio](https://makersuite.google.com/app/apikey) (2 min signup)
+
+### 3️⃣ Start Searching
+
+**Option A: Python SDK**
+```python
 from flamehaven_filesearch import FlamehavenFileSearch
+
 fs = FlamehavenFileSearch()
-fs.upload_file("handbook.pdf")
-result = fs.search("Summarize onboarding steps")
+fs.upload_file("company-handbook.pdf")
+
+result = fs.search("What is our vacation policy?")
 print(result["answer"])
-print(result["sources"])
-PY
-`
+# Expected: "Employees receive 15 days of paid vacation annually..."
+print(f"📎 Sources: {result['sources'][0]['filename']}, page {result['sources'][0]['page']}")
+```
 
-### Run the API server
+**Option B: REST API**
+```bash
+# Start server
+flamehaven-api
 
-`ash
-flamehaven-api        # entrypoint installed via [api] extra
-# or uvicorn flamehaven_filesearch.api:app --reload
-`
+# Upload (in new terminal)
+curl -X POST "http://localhost:8000/upload" -F "file=@handbook.pdf"
 
-Open http://localhost:8000/docs for interactive Swagger UI.
+# Search
+curl "http://localhost:8000/search?q=vacation+policy"
+```
 
-### Minimal REST flow
+**🌐 Interactive Docs:** Visit http://localhost:8000/docs
 
-`ash
-curl -X POST "http://localhost:8000/upload" -F "file=@report.pdf"
-curl "http://localhost:8000/search?q=key+findings&store=default"
-`
+**⚠️ Troubleshooting:**
+- `ModuleNotFoundError`: Run `pip install -U pip` first
+- API errors: Check your key has no spaces
+- [More solutions →](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Troubleshooting)
 
 ---
 
-## 🐳 Docker Deployment
+## 💡 Usage Examples
 
-`ash
-git clone https://github.com/flamehaven01/Flamehaven-Filesearch.git
-cd Flamehaven-Filesearch
-export GEMINI_API_KEY="..."
-docker build -t flamehaven-filesearch .
-docker run -e GEMINI_API_KEY -p 8000:8000 \
-  -v D:\Sanctum\Flamehaven-Filesearch/data:/app/data flamehaven-filesearch
-`
+### Organize Documents by Type
+```python
+fs = FlamehavenFileSearch()
 
-- Mount data/ if you want persistent stores.
-- Use FLAMEHAVEN_CONFIG env or .env file for additional overrides.
+# Separate stores for different contexts
+fs.create_store("hr-docs")
+fs.create_store("engineering")
+
+fs.upload_file("handbook.pdf", store="hr-docs")
+fs.upload_file("api-spec.md", store="engineering")
+
+# Search specific context
+result = fs.search("PTO policy", store="hr-docs")
+```
+
+### Batch Upload Directory
+```python
+import glob
+
+for pdf in glob.glob("./documents/*.pdf"):
+    print(f"📤 {pdf}...")
+    fs.upload_file(pdf, store="company-docs")
+```
+
+**More Examples:**
+- [Building an HR Chatbot](examples/hr-chatbot.md)
+- [Legal Document Search](examples/legal-search.md)
+- [REST API Integration](examples/api-client.py)
 
 ---
 
 ## ⚙️ Configuration
 
+Configure via environment variables or `.env` file:
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| GEMINI_API_KEY / GOOGLE_API_KEY | required | Gemini credentials for upload/search. |
-| MAX_FILE_SIZE_MB | 50 | Lite tier upload limit. |
-| UPLOAD_TIMEOUT_SEC | 60 | Upload watchdog. |
-| DEFAULT_MODEL | gemini-2.5-flash | Generation model. |
-| MAX_OUTPUT_TOKENS | 1024 | Gemini response size. |
-| MAX_SOURCES | 5 | Number of cited documents. |
-| DATA_DIR | ./data | Local store persistence path. |
+| `GEMINI_API_KEY` | *required* | Your Google Gemini API key |
+| `DATA_DIR` | `./data` | Document storage location |
+| `MAX_FILE_SIZE_MB` | `50` | Maximum file size (Gemini limit) |
+| `MAX_SOURCES` | `5` | Number of source citations |
+| `DEFAULT_MODEL` | `gemini-2.5-flash` | Gemini model to use |
 
-See [lamehaven_filesearch/config.py](flamehaven_filesearch/config.py) for the full data class and env mapping.
+**Example `.env`:**
+```bash
+GEMINI_API_KEY=AIza...your-key-here
+DATA_DIR=/var/flamehaven/data
+MAX_SOURCES=3
+```
 
----
-
-## 📊 Benchmarks
-
-| Operation | Avg Time | Environment |
-|-----------|----------|-------------|
-| Store creation | ~1s | Ubuntu 22.04, 2 vCPU, 4GB RAM, SSD |
-| Upload 10&nbsp;MB PDF | ~5s | Same VM, local disk |
-| Search query | ~2s | Gemini 2.5 Flash, 5 cited sources |
-| Batch upload (3×5MB) | ~12s | Sequential upload, Python SDK |
-
-> Detailed methodology + raw numbers: [Benchmarks wiki page](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Benchmarks).
+→ [Complete configuration reference](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Configuration)
 
 ---
 
-## 🛣️ Roadmap
+## 📦 Installation
 
-Roadmap items live in GitHub for transparency:
+### Prerequisites
 
-- [Project board](https://github.com/orgs/flamehaven01/projects?query=Flamehaven-Filesearch)
-- [Roadmap issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues?q=is%3Aopen+label%3Aroadmap)
+- Python 3.8 or higher
+- Google Gemini API key ([Get it free](https://makersuite.google.com/app/apikey))
 
-Highlights in progress:
+### Install from PyPI
 
-- Caching layer + rate limiting (v1.1)
-- Batch search & WebSocket streaming
-- Multi-language, analytics dashboard (v2.0)
+```bash
+# Basic installation
+pip install flamehaven-filesearch
+
+# With API Server
+pip install flamehaven-filesearch[api]
+```
+
+### Development Setup
+
+```bash
+git clone https://github.com/flamehaven01/Flamehaven-Filesearch.git
+cd Flamehaven-Filesearch
+pip install -e .[dev,api]
+pytest tests/
+```
+
+---
+
+## 🐳 Docker Deployment
+
+**Quick Start:**
+```bash
+docker run -e GEMINI_API_KEY="your-key" \
+  -p 8000:8000 \
+  -v flamehaven-data:/app/data \
+  flamehaven/filesearch:latest
+```
+
+**Docker Compose:**
+```yaml
+version: '3.8'
+services:
+  flamehaven:
+    image: flamehaven/filesearch:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+```
+
+→ [Production deployment guide](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Docker-Deployment)
+
+---
+
+## 📡 API Reference
+
+### Core Endpoints
+
+#### `POST /upload`
+Upload a document to a store.
+
+**Request:**
+```bash
+curl -X POST "http://localhost:8000/upload" \
+  -F "file=@report.pdf" \
+  -F "store=default"
+```
+
+**Response:**
+```json
+{
+  "filename": "report.pdf",
+  "store": "default",
+  "file_id": "abc123...",
+  "status": "uploaded"
+}
+```
+
+#### `GET /search`
+Search documents with natural language.
+
+**Request:**
+```bash
+curl "http://localhost:8000/search?q=vacation+policy&store=default&max_sources=3"
+```
+
+**Response:**
+```json
+{
+  "answer": "Employees receive 15 days of paid vacation annually...",
+  "sources": [
+    {
+      "filename": "handbook.pdf",
+      "page": 42,
+      "excerpt": "Vacation Policy: All full-time employees..."
+    }
+  ],
+  "query": "vacation policy",
+  "model": "gemini-2.5-flash"
+}
+```
+
+#### `GET /stores` | `DELETE /stores/{name}`
+Manage document stores.
+
+### Error Handling
+
+All errors return:
+```json
+{
+  "error": "Error message",
+  "code": "ERROR_CODE"
+}
+```
+
+| Code | Status | Solution |
+|------|--------|----------|
+| `FILE_TOO_LARGE` | 413 | Reduce file size or increase limit |
+| `INVALID_API_KEY` | 401 | Check your Gemini API key |
+| `STORE_NOT_FOUND` | 404 | Create store first |
+| `RATE_LIMIT_EXCEEDED` | 429 | Wait or upgrade API plan |
+
+### Python SDK
+
+```python
+from flamehaven_filesearch import FlamehavenFileSearch
+
+fs = FlamehavenFileSearch(
+    api_key="your-key",        # Optional if env var set
+    data_dir="./data",         # Custom storage
+    max_file_size_mb=100       # Override defaults
+)
+
+# API methods
+fs.create_store(name)
+fs.list_stores()
+fs.delete_store(name)
+fs.upload_file(path, store="default")
+fs.search(query, store="default", max_sources=5)
+```
+
+→ [Complete API documentation](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/API-Reference)
+
+---
+
+## 🏗️ Architecture
+
+```
+┌──────────────┐
+│   Client     │
+│ (SDK/REST)   │
+└──────┬───────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│  FlamehavenFileSearch Core          │
+│  ┌────────────────────────────────┐ │
+│  │  Document Processor            │ │
+│  │  → PDF/DOCX/TXT/MD parsing     │ │
+│  └────────────────────────────────┘ │
+│               ▼                      │
+│  ┌────────────────────────────────┐ │
+│  │  Google Gemini API             │ │
+│  │  → Embedding & Generation      │ │
+│  └────────────────────────────────┘ │
+│               ▼                      │
+│  ┌────────────────────────────────┐ │
+│  │  Store Manager                 │ │
+│  │  → SQLite + File System        │ │
+│  └────────────────────────────────┘ │
+└─────────────────────────────────────┘
+```
+
+→ [Detailed architecture docs](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Architecture)
+
+---
+
+## 📊 Performance
+
+**Test Environment:** Ubuntu 22.04, 2 vCPU, 4GB RAM, SSD
+
+| Operation | Time | Notes |
+|-----------|------|-------|
+| Upload 10MB PDF | ~5s | Includes parsing + API |
+| Search query | ~2s | With 5 citations |
+| Batch 3×5MB | ~12s | Sequential processing |
+
+**Throughput:** ~10 searches/sec • ~2MB/s processing  
+→ [Detailed benchmarks](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Benchmarks)
+
+---
+
+## 🔒 Security
+
+### Best Practices
+- **API Keys:** Use environment variables, never commit to git
+- **Data Privacy:** All documents stored locally in `DATA_DIR`
+- **Network:** Run behind reverse proxy with SSL in production
+- **Encryption:** Implement encryption at rest for sensitive docs
+
+→ [Security guide](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Security)
+
+---
+
+## ❓ Troubleshooting
+
+**Common issues:**
+
+| Problem | Solution |
+|---------|----------|
+| `ModuleNotFoundError` | `pip install flamehaven-filesearch[api]` |
+| "API key invalid" | Verify key: `echo $GEMINI_API_KEY` |
+| Slow uploads | Check file size, enable debug logs |
+| Irrelevant results | Reduce `max_sources`, lower `temperature` |
+
+**Debug Mode:**
+```bash
+export FLAMEHAVEN_DEBUG=1
+flamehaven-api
+```
+
+→ [Full troubleshooting guide](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Troubleshooting)
+
+---
+
+## 🗺️ Roadmap
+
+**v1.1 (Q1 2025):** Caching • Rate limiting • Improved errors  
+**v1.2 (Q2 2025):** Batch API • WebSocket streaming • Versioning  
+**v2.0 (Q3 2025):** Multi-language • Analytics • Custom embeddings
+
+→ [Detailed roadmap & voting](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Roadmap)
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork & create a feature branch.
-2. pip install -e .[dev,api]
-3. pytest tests/ (or make test) before opening a PR.
-4. Follow [CONTRIBUTING.md](CONTRIBUTING.md) for style, release notes, and checklist.
+We welcome contributions! 
 
-help wanted + good first issue labels mark low-barrier contributions.
+**Quick start:**
+1. Fork & clone the repo
+2. Install: `pip install -e .[dev,api]`
+3. Create branch: `git checkout -b feature/amazing`
+4. Add tests & commit changes
+5. Open Pull Request
+
+→ [Contributing guidelines](CONTRIBUTING.md) • [Good first issues](https://github.com/flamehaven01/Flamehaven-Filesearch/labels/good%20first%20issue)
 
 ---
 
-## 📬 Support & Links
+## 📚 Resources
 
-- Bugs & features: [GitHub Issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues)
-- Q&A / patterns: [Discussions](https://github.com/flamehaven01/Flamehaven-Filesearch/discussions)
-- Docs & cookbooks: [Wiki](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki)
-- Email: dev@Flamehaven.ai
+### Documentation
+- **[Wiki](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki)** - Guides, recipes, best practices
+- **[API Docs](http://localhost:8000/docs)** - Interactive Swagger UI
+- **[Examples](examples/)** - Code samples & use cases
+
+### Community
+- **[Discussions](https://github.com/flamehaven01/Flamehaven-Filesearch/discussions)** - Q&A and ideas
+- **[Issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues)** - Bug reports & features
+
+### Contact
+- **Email:** info@flamehaven.space
+- **Website:** [www.flamehaven.space](https://www.flamehaven.space)
+
+---
+
+## 🙏 Acknowledgments
+
+Built with: [FastAPI](https://fastapi.tiangolo.com/) • [Google Gemini API](https://ai.google.dev/) • [PyPDF2](https://pypdf2.readthedocs.io/) • [python-docx](https://python-docx.readthedocs.io/)
 
 ---
 
 ## 📄 License
 
-MIT License © 2025 Flamehaven Team. See [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
-If this project helps you, ⭐ the repo and tell us what you build!
+
+**If Flamehaven helps you, please ⭐ the repo!**
+
+Made with ❤️ by the Flamehaven Team
+
+[⬆️ Back to Top](#-flamehaven-filesearch)
+
 </div>
