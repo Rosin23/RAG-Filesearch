@@ -1,20 +1,18 @@
-# 🔥 SovDef FileSearch Lite
-
-### The FLAMEHAVEN File Search Tool
+# 🔥 FLAMEHAVEN FileSearch
 
 **Open Source Semantic Document Search**
 
 [![CI/CD](https://github.com/flamehaven01/SovDef-FileSearch-Lite/actions/workflows/ci.yml/badge.svg)](https://github.com/flamehaven01/SovDef-FileSearch-Lite/actions)
-[![PyPI version](https://badge.fury.io/py/sovdef-filesearch-lite.svg)](https://badge.fury.io/py/sovdef-filesearch-lite)
-[![Python Versions](https://img.shields.io/pypi/pyversions/sovdef-filesearch-lite.svg)](https://pypi.org/project/sovdef-filesearch-lite/)
+[![PyPI version](https://badge.fury.io/py/flamehaven-filesearch.svg)](https://badge.fury.io/py/flamehaven-filesearch)
+[![Python Versions](https://img.shields.io/pypi/pyversions/flamehaven-filesearch.svg)](https://pypi.org/project/flamehaven-filesearch/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
-## 🎯 What is SovDef FileSearch Lite?
+## 🎯 What is FLAMEHAVEN FileSearch?
 
-**SovDef FileSearch Lite** (the FLAMEHAVEN File Search Tool) is a practical, developer-friendly **RAG (Retrieval Augmented Generation)** solution for modern semantic document search. It empowers rapid deployment, customization, and experimentation for startups, researchers, and SaaS builders.
+**FLAMEHAVEN FileSearch** is a practical, developer-friendly **RAG (Retrieval Augmented Generation)** solution for modern semantic document search. It empowers rapid deployment, customization, and experimentation for startups, researchers, and SaaS builders.
 
 This project is proof that powerful AI search can be **fast, simple, and open**. Solo builders now have the tools to run advanced semantic file search in minutes—no corporate barriers, with full transparency and flexibility.
 
@@ -48,7 +46,7 @@ Built for rapid prototyping and true **community-driven growth**. MIT licensed.
 
 ## 🆚 How Does It Differ from Google Gemini API File Search Tool?
 
-| Feature | Google Gemini File Search | SovDef FileSearch Lite |
+| Feature | Google Gemini File Search | FLAMEHAVEN FileSearch |
 |---------|--------------------------|------------------------|
 | **Infrastructure** | Fully managed, enterprise-grade | Self-hosted, lightweight |
 | **Scaling** | Unlimited, automated | MVP-focused (50MB cap) |
@@ -63,7 +61,7 @@ Built for rapid prototyping and true **community-driven growth**. MIT licensed.
 ### Google Gemini API File Search Tool
 Offers fully managed, enterprise-grade RAG with robust infrastructure, unlimited scaling, automated chunking, and seamless context injection at scale. **Ideal for organizations seeking highly scalable, cost-effective, and hands-off document grounding.**
 
-### SovDef FileSearch Lite
+### FLAMEHAVEN FileSearch
 Provides **lightweight, open architecture** for fast DIY deployments with transparent control, easy extensibility, instant setup without complex onboarding, and code visibility—**perfect for solo developers and startups**.
 
 ---
@@ -74,10 +72,10 @@ Provides **lightweight, open architecture** for fast DIY deployments with transp
 
 ```bash
 # Core library only
-pip install sovdef-filesearch-lite
+pip install flamehaven-filesearch
 
 # With API server (recommended)
-pip install sovdef-filesearch-lite[api]
+pip install flamehaven-filesearch[api]
 ```
 
 ### Set API Key
@@ -93,9 +91,9 @@ Get your API key at: https://ai.google.dev/
 #### Option 1: Python Library (3 lines of code!)
 
 ```python
-from sovdef_filesearch_lite import SovDefLite
+from flamehaven_filesearch import FlamehavenFileSearch
 
-searcher = SovDefLite()
+searcher = FlamehavenFileSearch()
 searcher.upload_file("document.pdf")
 result = searcher.search("What are the key findings?")
 
@@ -107,7 +105,7 @@ print(f"Sources: {result['sources']}")
 
 ```bash
 # Start server
-uvicorn sovdef_filesearch_lite.api:app --reload
+uvicorn flamehaven_filesearch.api:app --reload
 
 # Upload file
 curl -X POST "http://localhost:8000/upload" \
@@ -142,16 +140,16 @@ curl "http://localhost:8000/search?q=key+findings"
 
 ```bash
 # Minimal installation
-pip install sovdef-filesearch-lite
+pip install flamehaven-filesearch
 
 # With API server support
-pip install sovdef-filesearch-lite[api]
+pip install flamehaven-filesearch[api]
 
 # With development tools
-pip install sovdef-filesearch-lite[dev]
+pip install flamehaven-filesearch[dev]
 
 # Everything
-pip install sovdef-filesearch-lite[all]
+pip install flamehaven-filesearch[all]
 ```
 
 ### Option 2: From Source
@@ -165,9 +163,9 @@ pip install -e ".[api]"
 ### Option 3: Docker
 
 ```bash
-docker pull sovdef/filesearch-lite:latest
+docker pull flamehaven/filesearch:latest
 # OR build locally
-docker build -t sovdef-filesearch-lite .
+docker build -t flamehaven-filesearch .
 ```
 
 ---
@@ -177,11 +175,11 @@ docker build -t sovdef-filesearch-lite .
 ### Simple Example (Library)
 
 ```python
-from sovdef_filesearch_lite import SovDefLite
+from flamehaven_filesearch import FlamehavenFileSearch
 import os
 
 # Initialize
-searcher = SovDefLite(api_key=os.getenv("GEMINI_API_KEY"))
+searcher = FlamehavenFileSearch(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Upload a file
 result = searcher.upload_file("research_paper.pdf")
@@ -230,7 +228,7 @@ print(f"✓ Uploaded {result['success']}/{result['total']} files")
 ```bash
 # Method 1: Using uvicorn directly
 export GEMINI_API_KEY="your-key"
-uvicorn sovdef_filesearch_lite.api:app --reload
+uvicorn flamehaven_filesearch.api:app --reload
 
 # Method 2: Using provided script
 ./scripts/start_server.sh
@@ -310,7 +308,7 @@ curl "http://localhost:8000/metrics"
 ```python
 import requests
 
-class SovDefAPIClient:
+class FlamehavenAPIClient:
     def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
 
@@ -328,7 +326,7 @@ class SovDefAPIClient:
         return response.json()
 
 # Usage
-client = SovDefAPIClient()
+client = FlamehavenAPIClient()
 client.upload("document.pdf")
 result = client.search("summary")
 print(result['answer'])
@@ -345,8 +343,8 @@ print(result['answer'])
 docker run -d \
   -p 8000:8000 \
   -e GEMINI_API_KEY="your-key" \
-  --name sovdef-api \
-  sovdef-filesearch-lite
+  --name flamehaven-api \
+  flamehaven-filesearch
 ```
 
 ### Docker Compose (Recommended for Production)
@@ -356,8 +354,8 @@ docker run -d \
 version: '3.8'
 
 services:
-  sovdef-api:
-    image: sovdef-filesearch-lite:latest
+  flamehaven-api:
+    image: flamehaven-filesearch:latest
     ports:
       - "8000:8000"
     environment:
@@ -435,7 +433,7 @@ MAX_SOURCES=5
 ### Programmatic Configuration
 
 ```python
-from sovdef_filesearch_lite import SovDefLite, Config
+from flamehaven_filesearch import FlamehavenFileSearch, Config
 
 # Custom configuration
 config = Config(
@@ -446,7 +444,7 @@ config = Config(
     max_sources=10
 )
 
-searcher = SovDefLite(config=config)
+searcher = FlamehavenFileSearch(config=config)
 ```
 
 ---
@@ -456,11 +454,11 @@ searcher = SovDefLite(config=config)
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │              FLAMEHAVEN File Search Tool                    │
-│            (SovDef FileSearch Lite v1.0.0)                  │
+│            (FLAMEHAVEN FileSearch v1.0.0)                  │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌───────────────┐         ┌──────────────┐               │
-│  │   FastAPI     │────────▶│  SovDefLite  │               │
+│  │   FastAPI     │────────▶│  FlamehavenFileSearch  │               │
 │  │   REST API    │         │     Core     │               │
 │  └───────┬───────┘         └──────┬───────┘               │
 │          │                         │                        │
@@ -481,19 +479,19 @@ searcher = SovDefLite(config=config)
 
 ### Components
 
-1. **Core Library** (`sovdef_filesearch_lite/core.py`)
-   - `SovDefLite` class - Main interface
+1. **Core Library** (`flamehaven_filesearch/core.py`)
+   - `FlamehavenFileSearch` class - Main interface
    - File upload with validation
    - Store management
    - Search with automatic grounding
 
-2. **API Server** (`sovdef_filesearch_lite/api.py`)
+2. **API Server** (`flamehaven_filesearch/api.py`)
    - FastAPI application
    - RESTful endpoints
    - OpenAPI/Swagger documentation
    - Error handling & logging
 
-3. **Configuration** (`sovdef_filesearch_lite/config.py`)
+3. **Configuration** (`flamehaven_filesearch/config.py`)
    - Environment-based config
    - Validation & defaults
    - Driftlock settings
@@ -513,9 +511,9 @@ searcher = SovDefLite(config=config)
 ### Example 1: Document Q&A
 
 ```python
-from sovdef_filesearch_lite import SovDefLite
+from flamehaven_filesearch import FlamehavenFileSearch
 
-searcher = SovDefLite()
+searcher = FlamehavenFileSearch()
 
 # Upload technical documentation
 searcher.upload_file("api_docs.pdf", store_name="docs")
@@ -581,7 +579,7 @@ More examples in [`examples/`](examples/) directory.
 pytest
 
 # With coverage
-pytest --cov=sovdef_filesearch_lite --cov-report=html
+pytest --cov=flamehaven_filesearch --cov-report=html
 
 # Specific test file
 pytest tests/test_core.py -v
@@ -629,14 +627,14 @@ cp .env.example .env
 # Format code
 make format
 # OR
-black sovdef_filesearch_lite/ tests/ examples/
-isort sovdef_filesearch_lite/ tests/ examples/
+black flamehaven_filesearch/ tests/ examples/
+isort flamehaven_filesearch/ tests/ examples/
 
 # Run linters
 make lint
 # OR
-flake8 sovdef_filesearch_lite/
-mypy sovdef_filesearch_lite/
+flake8 flamehaven_filesearch/
+mypy flamehaven_filesearch/
 ```
 
 ### Build Package
@@ -742,7 +740,7 @@ in the Software without restriction...
 
 ---
 
-## 🌟 Why Choose SovDef FileSearch Lite?
+## 🌟 Why Choose FLAMEHAVEN FileSearch?
 
 ### For Solo Developers
 ✅ **No corporate barriers** - Get started in minutes
@@ -768,15 +766,15 @@ in the Software without restriction...
 
 ```bash
 # Install
-pip install sovdef-filesearch-lite[api]
+pip install flamehaven-filesearch[api]
 
 # Set API key
 export GEMINI_API_KEY="your-key"
 
 # Start searching!
 python -c "
-from sovdef_filesearch_lite import SovDefLite
-s = SovDefLite()
+from flamehaven_filesearch import FlamehavenFileSearch
+s = FlamehavenFileSearch()
 s.upload_file('doc.pdf')
 print(s.search('summary')['answer'])
 "

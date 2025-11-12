@@ -3,15 +3,16 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sovdef-filesearch-lite"
+name = "flamehaven-filesearch"
 version = "1.0.0"
-description = "Lightweight file search for MVPs - Google File Search level convenience with quality guarantees"
+description = "FLAMEHAVEN FileSearch - Open source semantic document search powered by Google Gemini"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    {name = "SovDef Team", email = "dev@sovdef.ai"},
+    {name = "FLAMEHAVEN", email = "info@flamehaven.space"},
 ]
 keywords = [
+    "flamehaven",
     "file-search",
     "document-search",
     "RAG",
@@ -54,7 +55,7 @@ dev = [
     "isort>=5.12.0",
 ]
 all = [
-    "sovdef-filesearch-lite[api,dev]",
+    "flamehaven-filesearch[api,dev]",
 ]
 
 [project.urls]
@@ -64,13 +65,13 @@ Repository = "https://github.com/flamehaven01/SovDef-FileSearch-Lite"
 "Bug Tracker" = "https://github.com/flamehaven01/SovDef-FileSearch-Lite/issues"
 
 [project.scripts]
-sovdef-api = "sovdef_filesearch_lite.api:main"
+flamehaven-api = "flamehaven_filesearch.api:main"
 
 [tool.setuptools]
-packages = ["sovdef_filesearch_lite"]
+packages = ["flamehaven_filesearch"]
 
 [tool.setuptools.package-data]
-sovdef_filesearch_lite = ["py.typed"]
+flamehaven_filesearch = ["py.typed"]
 
 [tool.black]
 line-length = 88
@@ -92,10 +93,10 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=sovdef_filesearch_lite --cov-report=term-missing"
+addopts = "-v --cov=flamehaven_filesearch --cov-report=term-missing"
 
 [tool.coverage.run]
-source = ["sovdef_filesearch_lite"]
+source = ["flamehaven_filesearch"]
 omit = ["tests/*", "examples/*"]
 
 [tool.coverage.report]

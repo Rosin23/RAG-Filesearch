@@ -1,5 +1,5 @@
 """
-FastAPI server for SovDef FileSearch Lite
+FastAPI server for FLAMEHAVEN FileSearch
 
 Production-ready API with file upload, search, and management endpoints.
 """
@@ -16,7 +16,7 @@ import logging
 from pathlib import Path
 import time
 
-from .core import SovDefLite
+from .core import FlamehavenFileSearch
 from .config import Config
 
 # Configure logging
@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 # Initialize app
 app = FastAPI(
-    title="SovDef FileSearch Lite API",
-    description="Lightweight file search for MVPs - Google File Search level convenience with quality guarantees",
+    title="FLAMEHAVEN FileSearch API",
+    description="Open source semantic document search powered by Google Gemini",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -44,7 +44,7 @@ app.add_middleware(
 )
 
 # Global searcher instance
-searcher: Optional[SovDefLite] = None
+searcher: Optional[FlamehavenFileSearch] = None
 
 
 # Pydantic models
@@ -109,10 +109,10 @@ async def startup_event():
     global searcher
     try:
         config = Config.from_env()
-        searcher = SovDefLite(config=config)
-        logger.info("SovDefLite initialized successfully")
+        searcher = FlamehavenFileSearch(config=config)
+        logger.info("FLAMEHAVEN FileSearch initialized successfully")
     except Exception as e:
-        logger.error("Failed to initialize SovDefLite: %s", e)
+        logger.error("Failed to initialize FLAMEHAVEN FileSearch: %s", e)
         raise
 
 
@@ -120,7 +120,7 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown"""
-    logger.info("Shutting down SovDefLite API")
+    logger.info("Shutting down FLAMEHAVEN FileSearch API")
 
 
 # Health check
@@ -374,9 +374,9 @@ async def root():
         API information and available endpoints
     """
     return {
-        "name": "SovDef FileSearch Lite API",
+        "name": "FLAMEHAVEN FileSearch API",
         "version": "1.0.0",
-        "description": "Lightweight file search system for MVPs",
+        "description": "Open source semantic document search powered by Google Gemini",
         "docs": "/docs",
         "health": "/health",
         "endpoints": {
@@ -420,8 +420,8 @@ def main():
 
     # Check for --help
     if "--help" in sys.argv or "-h" in sys.argv:
-        print("SovDef FileSearch Lite API Server")
-        print("\nUsage: sovdef-api [options]")
+        print("FLAMEHAVEN FileSearch API Server")
+        print("\nUsage: flamehaven-api [options]")
         print("\nOptions via environment variables:")
         print("  HOST=0.0.0.0        - Server host")
         print("  PORT=8000           - Server port")
@@ -430,7 +430,7 @@ def main():
         print("  GEMINI_API_KEY=...  - Google Gemini API key (required)")
         print("\nExample:")
         print("  export GEMINI_API_KEY='your-key'")
-        print("  sovdef-api")
+        print("  flamehaven-api")
         print("\nDocs: http://localhost:8000/docs")
         return
 
@@ -440,12 +440,12 @@ def main():
         print("Example: export GEMINI_API_KEY='your-api-key'")
         sys.exit(1)
 
-    print(f"Starting SovDef FileSearch Lite API on {host}:{port}")
+    print(f"Starting FLAMEHAVEN FileSearch API on {host}:{port}")
     print(f"Workers: {workers}, Reload: {reload}")
     print(f"Docs: http://{host}:{port}/docs")
 
     uvicorn.run(
-        "sovdef_filesearch_lite.api:app",
+        "flamehaven_filesearch.api:app",
         host=host,
         port=port,
         workers=workers if not reload else 1,

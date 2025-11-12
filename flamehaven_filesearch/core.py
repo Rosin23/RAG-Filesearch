@@ -1,6 +1,6 @@
 """
-SovDef Lite - Lightweight File Search for MVPs
-Wrapping Google File Search for 5-minute deployment
+FLAMEHAVEN FileSearch - Open Source Semantic Document Search
+Fast, simple, and transparent file search powered by Google Gemini
 """
 
 from google import genai
@@ -16,12 +16,12 @@ from .config import Config
 logger = logging.getLogger(__name__)
 
 
-class SovDefLite:
+class FlamehavenFileSearch:
     """
-    Lightweight file search - Direct Google File Search integration
+    FLAMEHAVEN FileSearch - Open source semantic document search
 
     Examples:
-        >>> searcher = SovDefLite()
+        >>> searcher = FlamehavenFileSearch()
         >>> result = searcher.upload_file("document.pdf")
         >>> answer = searcher.search("What are the key findings?")
         >>> print(answer['answer'])
@@ -29,7 +29,7 @@ class SovDefLite:
 
     def __init__(self, api_key: Optional[str] = None, config: Optional[Config] = None):
         """
-        Initialize SovDefLite
+        Initialize FLAMEHAVEN FileSearch
 
         Args:
             api_key: Google GenAI API key (optional if set in environment)
@@ -41,7 +41,7 @@ class SovDefLite:
         self.client = genai.Client(api_key=self.config.api_key)
         self.stores = {}  # Simple in-memory cache
 
-        logger.info("SovDefLite initialized with model: %s", self.config.default_model)
+        logger.info("FLAMEHAVEN FileSearch initialized with model: %s", self.config.default_model)
 
     def create_store(self, name: str = "default") -> str:
         """

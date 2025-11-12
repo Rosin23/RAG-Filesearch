@@ -1,4 +1,4 @@
-# Dockerfile for SovDef FileSearch Lite API
+# Dockerfile for FLAMEHAVEN FileSearch API
 FROM python:3.11-slim
 
 # Set working directory
@@ -14,8 +14,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY sovdef_filesearch_lite/ ./sovdef_filesearch_lite/
-COPY setup.py pyproject.toml README.md LICENSE ./
+COPY flamehaven_filesearch/ ./flamehaven_filesearch/
+COPY pyproject.toml README.md ./
 
 # Install package
 RUN pip install -e ".[api]"
@@ -31,4 +31,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # Run API server
-CMD ["uvicorn", "sovdef_filesearch_lite.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["flamehaven-api"]

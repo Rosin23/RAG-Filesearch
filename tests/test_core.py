@@ -1,11 +1,11 @@
 """
-Tests for SovDefLite core functionality
+Tests for FLAMEHAVEN FileSearch core functionality
 """
 
 import pytest
 import os
 from pathlib import Path
-from sovdef_filesearch_lite import SovDefLite, Config
+from flamehaven_filesearch import FlamehavenFileSearch, Config
 
 
 class TestConfig:
@@ -51,8 +51,8 @@ class TestConfig:
         assert "default_model" in config_dict
 
 
-class TestSovDefLite:
-    """Test SovDefLite class"""
+class TestFlamehavenFileSearch:
+    """Test FLAMEHAVEN FileSearch class"""
 
     @pytest.fixture
     def mock_api_key(self, monkeypatch):
@@ -67,7 +67,7 @@ class TestSovDefLite:
         # This will fail validation if using mock key
         # In real tests, use actual API key or mock the client
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             assert searcher.config.api_key == mock_api_key
             assert searcher.stores == {}
         except Exception:
@@ -78,7 +78,7 @@ class TestSovDefLite:
         """Test initialization with config object"""
         config = Config(api_key=mock_api_key, max_file_size_mb=100)
         try:
-            searcher = SovDefLite(config=config)
+            searcher = FlamehavenFileSearch(config=config)
             assert searcher.config.max_file_size_mb == 100
         except Exception:
             # Expected to fail with mock key
@@ -90,12 +90,12 @@ class TestSovDefLite:
         monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
 
         with pytest.raises(ValueError, match="API key not provided"):
-            SovDefLite()
+            FlamehavenFileSearch()
 
     def test_upload_file_not_found(self, mock_api_key):
         """Test upload with non-existent file"""
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             result = searcher.upload_file("nonexistent.pdf")
             assert result["status"] == "error"
             assert "not found" in result["message"].lower()
@@ -111,7 +111,7 @@ class TestSovDefLite:
         large_file.write_bytes(b"x" * (51 * 1024 * 1024))
 
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             result = searcher.upload_file(str(large_file), max_size_mb=50)
             assert result["status"] == "error"
             assert "too large" in result["message"].lower()
@@ -122,7 +122,7 @@ class TestSovDefLite:
     def test_search_store_not_found(self, mock_api_key):
         """Test search with non-existent store"""
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             result = searcher.search("test query", store_name="nonexistent")
             assert result["status"] == "error"
             assert "not found" in result["message"].lower()
@@ -133,7 +133,7 @@ class TestSovDefLite:
     def test_list_stores_empty(self, mock_api_key):
         """Test listing stores when none exist"""
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             stores = searcher.list_stores()
             assert stores == {}
         except Exception:
@@ -143,7 +143,7 @@ class TestSovDefLite:
     def test_get_metrics(self, mock_api_key):
         """Test getting metrics"""
         try:
-            searcher = SovDefLite(api_key=mock_api_key)
+            searcher = FlamehavenFileSearch(api_key=mock_api_key)
             metrics = searcher.get_metrics()
             assert "stores_count" in metrics
             assert "stores" in metrics
@@ -156,7 +156,7 @@ class TestSovDefLite:
 
 # Integration tests (require actual API key)
 @pytest.mark.integration
-class TestSovDefLiteIntegration:
+class TestFlamehavenFileSearchIntegration:
     """Integration tests requiring actual API key"""
 
     @pytest.fixture
@@ -165,7 +165,7 @@ class TestSovDefLiteIntegration:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             pytest.skip("GEMINI_API_KEY not set")
-        return SovDefLite(api_key=api_key)
+        return FlamehavenFileSearch(api_key=api_key)
 
     @pytest.fixture
     def sample_file(self, tmp_path):

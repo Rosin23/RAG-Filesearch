@@ -1,7 +1,7 @@
 include README.md
 include requirements.txt
 include pyproject.toml
-recursive-include sovdef_filesearch_lite *.py
+recursive-include flamehaven_filesearch *.py
 recursive-exclude tests *
 recursive-exclude examples *
 recursive-exclude .github *

@@ -1,1 +1,1 @@
-"""Tests for sovdef_filesearch_lite"""
+"""Tests for flamehaven_filesearch"""

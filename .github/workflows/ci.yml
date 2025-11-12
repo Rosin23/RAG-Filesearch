@@ -26,13 +26,13 @@ jobs:
           pip install black flake8 isort mypy
 
       - name: Run black
-        run: black --check sovdef_filesearch_lite/ tests/ examples/
+        run: black --check flamehaven_filesearch/ tests/ examples/
 
       - name: Run isort
-        run: isort --check-only sovdef_filesearch_lite/ tests/ examples/
+        run: isort --check-only flamehaven_filesearch/ tests/ examples/
 
       - name: Run flake8
-        run: flake8 sovdef_filesearch_lite/ tests/ examples/ --max-line-length=88 --extend-ignore=E203,W503
+        run: flake8 flamehaven_filesearch/ tests/ examples/ --max-line-length=88 --extend-ignore=E203,W503
 
   test:
     name: Test Python ${{ matrix.python-version }}
@@ -56,7 +56,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/ -v --cov=sovdef_filesearch_lite --cov-report=xml --cov-report=term
+          pytest tests/ -v --cov=flamehaven_filesearch --cov-report=xml --cov-report=term
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -146,8 +146,8 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t sovdef-filesearch-lite:latest -f Dockerfile .
+          docker build -t flamehaven-filesearch:latest -f Dockerfile .
 
       - name: Test Docker image
         run: |
-          docker run --rm sovdef-filesearch-lite:latest python -c "from sovdef_filesearch_lite import SovDefLite; print('OK')"
+          docker run --rm flamehaven-filesearch:latest python -c "from flamehaven_filesearch import FlamehavenFileSearch; print('OK')"

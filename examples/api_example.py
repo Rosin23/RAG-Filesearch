@@ -1,7 +1,7 @@
 """
-API client example for SovDef FileSearch Lite
+API client example for FLAMEHAVEN FileSearch
 
-This example demonstrates how to interact with the SovDef API server
+This example demonstrates how to interact with the FLAMEHAVEN FileSearch API server
 using Python requests library.
 """
 
@@ -10,8 +10,8 @@ import json
 from pathlib import Path
 
 
-class SovDefAPIClient:
-    """Simple API client for SovDef FileSearch Lite"""
+class FlamehavenAPIClient:
+    """Simple API client for FLAMEHAVEN FileSearch"""
 
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
@@ -83,9 +83,9 @@ class SovDefAPIClient:
 def main():
     """Example usage"""
     # Initialize client
-    client = SovDefAPIClient("http://localhost:8000")
+    client = FlamehavenAPIClient("http://localhost:8000")
 
-    print("SovDef FileSearch Lite API Client Example")
+    print("FLAMEHAVEN FileSearch API Client Example")
     print("=" * 50)
 
     # 1. Health check
@@ -97,7 +97,7 @@ def main():
     except Exception as e:
         print(f"   Error: {e}")
         print("   Make sure the API server is running!")
-        print("   Start with: uvicorn sovdef_filesearch_lite.api:app --reload")
+        print("   Start with: flamehaven-api")
         return
 
     # 2. Create a store

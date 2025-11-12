@@ -1,10 +1,10 @@
 """
-Tests for SovDefLite API
+Tests for FLAMEHAVEN FileSearch API
 """
 
 import pytest
 from fastapi.testclient import TestClient
-from sovdef_filesearch_lite.api import app
+from flamehaven_filesearch.api import app
 import os
 from io import BytesIO
 
@@ -31,7 +31,7 @@ class TestHealthEndpoints:
         response = client.get("/")
         assert response.status_code == 200
         data = response.json()
-        assert data["name"] == "SovDef FileSearch Lite API"
+        assert data["name"] == "FLAMEHAVEN FileSearch API"
         assert "version" in data
         assert "endpoints" in data
 

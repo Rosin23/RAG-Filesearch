@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  sovdef-api:
+  flamehaven-api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sovdef-filesearch-lite
+    container_name: flamehaven-filesearch
     ports:
       - "8000:8000"
     environment:
@@ -28,10 +28,10 @@ services:
       retries: 3
       start_period: 5s
     networks:
-      - sovdef-network
+      - flamehaven-network
 
 networks:
-  sovdef-network:
+  flamehaven-network:
     driver: bridge
 
 volumes:

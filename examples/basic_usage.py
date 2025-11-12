@@ -1,5 +1,5 @@
 """
-Basic usage example for SovDef FileSearch Lite
+Basic usage example for FLAMEHAVEN FileSearch
 
 This example demonstrates:
 1. Initializing the searcher
@@ -9,7 +9,7 @@ This example demonstrates:
 """
 
 import os
-from sovdef_filesearch_lite import SovDefLite, Config
+from flamehaven_filesearch import FlamehavenFileSearch, Config
 import json
 
 
@@ -21,9 +21,9 @@ def main():
         print("Example: export GEMINI_API_KEY='your-api-key'")
         return
 
-    # Initialize SovDefLite
-    print("Initializing SovDefLite...")
-    searcher = SovDefLite(api_key=api_key)
+    # Initialize FLAMEHAVEN FileSearch
+    print("Initializing FLAMEHAVEN FileSearch...")
+    searcher = FlamehavenFileSearch(api_key=api_key)
 
     # Example 1: Create a store
     print("\n1. Creating a store...")
