@@ -1,5 +1,5 @@
 """
-Configuration management for SovDef FileSearch Lite
+Configuration management for FLAMEHAVEN FileSearch
 """
 
 import os
@@ -10,7 +10,7 @@ from typing import Any, Dict, Optional
 @dataclass
 class Config:
     """
-    Configuration class for SovDef FileSearch Lite
+    Configuration class for FLAMEHAVEN FileSearch
 
     Attributes:
         api_key: Google GenAI API key
@@ -44,11 +44,17 @@ class Config:
         if self.api_key is None:
             self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
-    def validate(self) -> bool:
-        """Validate configuration"""
-        if not self.api_key:
+    def validate(self, require_api_key: bool = False) -> bool:
+        """
+        Validate configuration
+
+        Args:
+            require_api_key: If True, API key is required. If False, API key is optional
+                           (for offline/local-only mode)
+        """
+        if require_api_key and not self.api_key:
             raise ValueError(
-                "API key not provided. Set GEMINI_API_KEY or GOOGLE_API_KEY "
+                "API key required for remote mode. Set GEMINI_API_KEY or GOOGLE_API_KEY "
                 "environment variable, or pass api_key parameter."
             )
 

@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains example code demonstrating how to use SovDef FileSearch Lite.
+This directory contains example code demonstrating how to use FLAMEHAVEN FileSearch.
 
 ## Available Examples
 
@@ -39,7 +39,7 @@ Shows how to interact with the SovDef API server:
 ```bash
 # Terminal 1: Start API server
 export GEMINI_API_KEY="your-api-key"
-uvicorn sovdef_filesearch_lite.api:app --reload
+uvicorn flamehaven_filesearch.api:app --reload
 
 # Terminal 2: Run example
 python examples/api_example.py
@@ -57,7 +57,7 @@ python examples/api_example.py
 ### Minimal Example (3 lines)
 
 ```python
-from sovdef_filesearch_lite import SovDefLite
+from flamehaven_filesearch import SovDefLite
 
 searcher = SovDefLite(api_key="your-key")
 searcher.upload_file("document.pdf")
@@ -81,7 +81,7 @@ curl "http://localhost:8000/search?q=key+points"
 ### Template Structure
 
 ```python
-from sovdef_filesearch_lite import SovDefLite
+from flamehaven_filesearch import SovDefLite
 import os
 
 # 1. Setup

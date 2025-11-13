@@ -1,8 +1,8 @@
 .PHONY: help install install-dev test lint format clean build publish docker-build docker-run
 
 help:
-	@echo "SovDef FileSearch Lite - Makefile Commands"
-	@echo "==========================================="
+	@echo "FLAMEHAVEN FileSearch - Makefile Commands"
+	@echo "=========================================="
 	@echo "install          - Install package"
 	@echo "install-dev      - Install with development dependencies"
 	@echo "install-api      - Install with API server dependencies"
@@ -36,19 +36,19 @@ test:
 	pytest -v
 
 test-cov:
-	pytest --cov=sovdef_filesearch_lite --cov-report=html --cov-report=term
+	pytest --cov=flamehaven_filesearch --cov-report=html --cov-report=term
 
 test-integration:
 	pytest -v -m integration
 
 lint:
-	flake8 sovdef_filesearch_lite/ tests/ examples/
-	black --check sovdef_filesearch_lite/ tests/ examples/
-	isort --check-only sovdef_filesearch_lite/ tests/ examples/
+	flake8 flamehaven_filesearch/ tests/ examples/
+	black --check flamehaven_filesearch/ tests/ examples/
+	isort --check-only flamehaven_filesearch/ tests/ examples/
 
 format:
-	black sovdef_filesearch_lite/ tests/ examples/
-	isort sovdef_filesearch_lite/ tests/ examples/
+	black flamehaven_filesearch/ tests/ examples/
+	isort flamehaven_filesearch/ tests/ examples/
 
 clean:
 	rm -rf build/
@@ -71,13 +71,13 @@ publish: build
 	python -m twine upload dist/*
 
 docker-build:
-	docker build -t sovdef-filesearch-lite:latest .
+	docker build -t flamehaven-filesearch:latest .
 
 docker-run:
 	docker run -d -p 8000:8000 \
 		-e GEMINI_API_KEY=$(GEMINI_API_KEY) \
-		--name sovdef-api \
-		sovdef-filesearch-lite:latest
+		--name flamehaven-api \
+		flamehaven-filesearch:latest
 
 docker-compose-up:
 	docker-compose up -d
@@ -86,7 +86,7 @@ docker-compose-down:
 	docker-compose down
 
 server:
-	uvicorn sovdef_filesearch_lite.api:app --reload --host 0.0.0.0 --port 8000
+	uvicorn flamehaven_filesearch.api:app --reload --host 0.0.0.0 --port 8000
 
 server-prod:
-	uvicorn sovdef_filesearch_lite.api:app --host 0.0.0.0 --port 8000 --workers 4
+	uvicorn flamehaven_filesearch.api:app --host 0.0.0.0 --port 8000 --workers 4

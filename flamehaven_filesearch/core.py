@@ -42,9 +42,11 @@ class FlamehavenFileSearch:
             config: Configuration object (optional)
         """
         self.config = config or Config(api_key=api_key)
-        self.config.validate()
-
         self._use_native_client = bool(google_genai)
+
+        # Validate config - API key required only for remote mode
+        self.config.validate(require_api_key=self._use_native_client)
+
         self._local_store_docs: Dict[str, List[Dict[str, str]]] = {}
         self.client = None
 

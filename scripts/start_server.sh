@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start SovDef FileSearch Lite API Server
+# Start FLAMEHAVEN FileSearch API Server
 # Usage: ./scripts/start_server.sh [dev|prod]
 
 MODE=${1:-dev}
@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Starting SovDef FileSearch Lite API Server${NC}"
+echo -e "${GREEN}Starting FLAMEHAVEN FileSearch API Server${NC}"
 echo "=========================================="
 
 # Check if API key is set
@@ -37,7 +37,7 @@ if [ "$MODE" == "prod" ]; then
     echo "Host: 0.0.0.0"
     echo "Port: 8000"
     echo ""
-    uvicorn sovdef_filesearch_lite.api:app \
+    uvicorn flamehaven_filesearch.api:app \
         --host 0.0.0.0 \
         --port 8000 \
         --workers 4 \
@@ -51,7 +51,7 @@ else
     echo "API Docs: http://localhost:8000/docs"
     echo "Health Check: http://localhost:8000/health"
     echo ""
-    uvicorn sovdef_filesearch_lite.api:app \
+    uvicorn flamehaven_filesearch.api:app \
         --reload \
         --host 0.0.0.0 \
         --port 8000 \

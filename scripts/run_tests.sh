@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Run tests for SovDef FileSearch Lite
+# Run tests for FLAMEHAVEN FileSearch
 # Usage: ./scripts/run_tests.sh [all|unit|integration|coverage]
 
 TEST_TYPE=${1:-unit}
@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${GREEN}Running SovDef FileSearch Lite Tests${NC}"
+echo -e "${GREEN}Running FLAMEHAVEN FileSearch Tests${NC}"
 echo "====================================="
 echo ""
 
@@ -39,7 +39,7 @@ case $TEST_TYPE in
     coverage)
         echo -e "${BLUE}Running tests with COVERAGE report${NC}"
         pytest -v -m "not integration" \
-            --cov=sovdef_filesearch_lite \
+            --cov=flamehaven_filesearch \
             --cov-report=html \
             --cov-report=term-missing \
             --cov-report=xml

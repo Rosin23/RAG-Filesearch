@@ -1,6 +1,6 @@
-# Contributing to SovDef FileSearch Lite
+# Contributing to FLAMEHAVEN FileSearch
 
-Thank you for considering contributing to SovDef FileSearch Lite!
+Thank you for considering contributing to FLAMEHAVEN FileSearch!
 
 ## Getting Started
 
@@ -9,8 +9,8 @@ Thank you for considering contributing to SovDef FileSearch Lite!
 1. Fork the repository
 2. Clone your fork:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/SovDef-FileSearch-Lite.git
-   cd SovDef-FileSearch-Lite
+   git clone https://github.com/YOUR-USERNAME/Flamehaven-Filesearch.git
+   cd Flamehaven-Filesearch
    ```
 
 3. Install development dependencies:
@@ -36,14 +36,14 @@ We use:
 
 Run formatters:
 ```bash
-black sovdef_filesearch_lite/ tests/ examples/
-isort sovdef_filesearch_lite/ tests/ examples/
+black flamehaven_filesearch/ tests/ examples/
+isort flamehaven_filesearch/ tests/ examples/
 ```
 
 Run linters:
 ```bash
-flake8 sovdef_filesearch_lite/ tests/ examples/
-mypy sovdef_filesearch_lite/
+flake8 flamehaven_filesearch/ tests/ examples/
+mypy flamehaven_filesearch/
 ```
 
 ### Testing
@@ -57,7 +57,7 @@ pytest
 pytest -m "not integration"
 
 # With coverage
-pytest --cov=sovdef_filesearch_lite --cov-report=html
+pytest --cov=flamehaven_filesearch --cov-report=html
 
 # Specific test file
 pytest tests/test_core.py -v

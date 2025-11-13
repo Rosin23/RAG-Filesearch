@@ -162,7 +162,12 @@ async def upload_file(
     # Create temporary file
     temp_dir = tempfile.mkdtemp()
     try:
-        file_path = os.path.join(temp_dir, file.filename)
+        # SECURITY: Sanitize filename to prevent path traversal attacks
+        safe_filename = os.path.basename(file.filename)
+        if not safe_filename or safe_filename.startswith('.'):
+            raise HTTPException(status_code=400, detail="Invalid filename")
+
+        file_path = os.path.join(temp_dir, safe_filename)
 
         # Save uploaded file
         with open(file_path, "wb") as f:
@@ -210,7 +215,12 @@ async def upload_multiple_files(
     try:
         # Save all files
         for file in files:
-            file_path = os.path.join(temp_dir, file.filename)
+            # SECURITY: Sanitize filename to prevent path traversal attacks
+            safe_filename = os.path.basename(file.filename)
+            if not safe_filename or safe_filename.startswith('.'):
+                raise HTTPException(status_code=400, detail=f"Invalid filename: {file.filename}")
+
+            file_path = os.path.join(temp_dir, safe_filename)
             with open(file_path, "wb") as f:
                 shutil.copyfileobj(file.file, f)
             file_paths.append(file_path)
