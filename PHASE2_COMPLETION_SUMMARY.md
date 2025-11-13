@@ -488,7 +488,7 @@ pre-commit install
 pre-commit run --all-files
 
 # Skip specific hooks if needed (use sparingly)
-SKIP=bandit,flake8 git commit -m "WIP: temporary commit"
+SKIP=bandit,flake8 git commit -m "chore: emergency hotfix"
 ```
 
 **Stages**:

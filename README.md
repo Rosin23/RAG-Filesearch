@@ -157,11 +157,6 @@ for pdf in glob.glob("./documents/*.pdf"):
     fs.upload_file(pdf, store="company-docs")
 ```
 
-**More Examples:**
-- [Building an HR Chatbot](examples/hr-chatbot.md)
-- [Legal Document Search](examples/legal-search.md)
-- [REST API Integration](examples/api-client.py)
-
 ---
 
 ## ⚙️ Configuration

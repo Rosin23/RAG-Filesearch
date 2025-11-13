@@ -1,0 +1,43 @@
+{
+  "readme_score": 0.4,
+  "coherence_score": 0.7203389830508474,
+  "errors": [
+    "D:\\Sanctum\\Flamehaven-Filesearch\\README.md:161 broken link -> examples/hr-chatbot.md",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\README.md:162 broken link -> examples/legal-search.md",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\README.md:163 broken link -> examples/api-client.py"
+  ],
+  "warnings": [
+    "D:\\Sanctum\\Flamehaven-Filesearch\\PHASE2_COMPLETION_SUMMARY.md:491 contains 'WIP'",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Reverse Proxy with SSL)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Firewall Configuration)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Worker Process Isolation)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Data Encryption at Rest)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Regular Security Audits)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Dependency Management)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\SECURITY.md: heading level jumps from 1 to 4 (Secret Scanning)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Check Current Version)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Review Breaking Changes)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Option B: Git (Development))",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Production (Systemd))",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Docker)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Test Caching)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Check Metrics)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Prometheus Endpoint)",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\UPGRADING.md: heading level jumps from 1 to 4 (Grafana Dashboard (Optional))",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\flamehaven_filesearch.egg-info\\dependency_links.txt: missing headings",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\flamehaven_filesearch.egg-info\\entry_points.txt: missing headings",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\flamehaven_filesearch.egg-info\\requires.txt: missing headings",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\flamehaven_filesearch.egg-info\\SOURCES.txt: missing headings",
+    "D:\\Sanctum\\Flamehaven-Filesearch\\flamehaven_filesearch.egg-info\\top_level.txt: missing headings"
+  ],
+  "meta": {
+    "deep_latency_ms": 5.634784698486328,
+    "deep_sample_used": true,
+    "deep_drift_jsd": -8.008566259537294e-17
+  },
+  "tribunal": {
+    "archangel": "Archangel: extremely strict senior engineer. Highlight all weaknesses, missing parts, and vague language.\n\n\nContext summary:\nREADME score=0.40, coherence=0.72, errors=3, warnings=22\nIssues: {'errors': 3, 'warnings': 22}\n",
+    "advocate": "Advocate: defend the author, explain reasonable tradeoffs and constraints.\n\n\nContext summary:\nREADME score=0.40, coherence=0.72, errors=3, warnings=22\nIssues: {'errors': 3, 'warnings': 22}\n",
+    "oracle": "Oracle: synthesize Archangel and Advocate into a balanced verdict and prioritized improvement plan.\n\n\nContext summary:\nREADME score=0.40, coherence=0.72, errors=3, warnings=22\nIssues: {'errors': 3, 'warnings': 22}\n"
+  }
+}
