@@ -8,6 +8,9 @@ Production-ready API with:
 - Standardized error handling
 - Input validation
 - Enhanced monitoring
+- LRU caching with TTL
+- Prometheus metrics
+- Structured JSON logging
 """
 
 import logging
@@ -20,7 +23,7 @@ from typing import List, Optional
 from datetime import datetime
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, Request, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -49,12 +52,21 @@ from .middlewares import (
     RequestLoggingMiddleware,
     get_request_id,
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - [%(request_id)s] - %(message)s",
+from .cache import get_search_cache, get_all_cache_stats
+from .metrics import (
+    MetricsCollector,
+    get_metrics_text,
+    get_metrics_content_type,
 )
+from .logging_config import setup_json_logging, setup_development_logging
+
+# Configure structured JSON logging for production
+# Use ENVIRONMENT=development for human-readable logs
+if os.getenv("ENVIRONMENT", "production") == "development":
+    setup_development_logging(level=logging.INFO)
+else:
+    setup_json_logging(level=logging.INFO)
+
 logger = logging.getLogger(__name__)
 
 # Initialize rate limiter
@@ -69,17 +81,28 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# Custom rate limit handler that records metrics
+async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    """Custom rate limit handler with metrics"""
+    # Record rate limit exceeded metric
+    endpoint = request.url.path
+    MetricsCollector.record_rate_limit_exceeded(endpoint)
+
+    # Call default handler
+    return await _rate_limit_exceeded_handler(request, exc)
+
 # Add rate limit handler
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 
 # Add middlewares (order matters!)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
 
-# Global searcher instance
+# Global instances
 searcher: Optional[FlamehavenFileSearch] = None
+search_cache = None  # Initialized in startup
 startup_time = time.time()
 
 
@@ -172,14 +195,23 @@ class ErrorResponse(BaseModel):
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    """Initialize the searcher on startup"""
-    global searcher, startup_time
+    """Initialize the searcher and caching on startup"""
+    global searcher, search_cache, startup_time
     startup_time = time.time()
 
     try:
         config = Config.from_env()
         searcher = FlamehavenFileSearch(config=config)
+
+        # Initialize search cache (1000 items, 1 hour TTL)
+        search_cache = get_search_cache(maxsize=1000, ttl=3600)
+
+        # Update initial system metrics
+        MetricsCollector.update_system_metrics()
+
         logger.info("FLAMEHAVEN FileSearch v1.1.0 initialized successfully")
+        logger.info("Caching enabled: 1000 items, 3600s TTL")
+        logger.info("Prometheus metrics enabled at /prometheus")
     except Exception as e:
         logger.error(f"Failed to initialize FLAMEHAVEN FileSearch: {e}")
         raise
@@ -276,6 +308,7 @@ async def upload_single_file(
         ServiceUnavailableError: If service not initialized
     """
     request_id = get_request_id(request)
+    start_time = time.time()
 
     if not searcher:
         raise ServiceUnavailableError("FileSearch", "Service not initialized")
@@ -306,11 +339,28 @@ async def upload_single_file(
         result["request_id"] = request_id
         result["filename"] = validated_filename
 
+        # Record metrics
+        duration = time.time() - start_time
+        MetricsCollector.record_file_upload(
+            store=store,
+            size_bytes=file_size,
+            duration=duration,
+            success=True
+        )
+
         return result
 
-    except FileSearchException:
+    except FileSearchException as e:
+        # Record failed upload metric
+        duration = time.time() - start_time
+        MetricsCollector.record_file_upload(store=store, size_bytes=0, duration=duration, success=False)
+        MetricsCollector.record_error(error_type=e.__class__.__name__, endpoint="/api/upload/single")
         raise
     except Exception as e:
+        # Record failed upload metric
+        duration = time.time() - start_time
+        MetricsCollector.record_file_upload(store=store, size_bytes=0, duration=duration, success=False)
+        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/upload/single")
         logger.error(f"[{request_id}] Upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -415,6 +465,8 @@ async def search(request: Request, search_request: SearchRequest):
     """
     Search files and get AI-generated answers (Rate limited: 100/min)
 
+    Uses LRU caching with 1-hour TTL for improved performance.
+
     Args:
         search_request: Search request with query and parameters
 
@@ -427,6 +479,7 @@ async def search(request: Request, search_request: SearchRequest):
         ServiceUnavailableError: If service not initialized
     """
     request_id = get_request_id(request)
+    start_time = time.time()
 
     if not searcher:
         raise ServiceUnavailableError("FileSearch", "Service not initialized")
@@ -434,6 +487,40 @@ async def search(request: Request, search_request: SearchRequest):
     try:
         # Validate search request
         validated_query, _ = validate_search_request(search_request.query)
+
+        # Check cache first
+        cache_key_params = {
+            "model": search_request.model,
+            "max_tokens": search_request.max_tokens,
+            "temperature": search_request.temperature,
+        }
+        cached_result = search_cache.get(
+            validated_query,
+            search_request.store_name,
+            **cache_key_params
+        )
+
+        if cached_result:
+            # Cache hit - return cached result
+            cached_result["request_id"] = request_id
+            duration = time.time() - start_time
+
+            # Record metrics
+            MetricsCollector.record_cache_hit("search")
+            results_count = len(cached_result.get("sources", []))
+            MetricsCollector.record_search(
+                store=search_request.store_name,
+                duration=duration,
+                results_count=results_count,
+                success=True
+            )
+
+            logger.info(f"[{request_id}] Cache HIT for query: {validated_query[:50]}...")
+            return cached_result
+
+        # Cache miss - perform search
+        MetricsCollector.record_cache_miss("search")
+        logger.info(f"[{request_id}] Cache MISS for query: {validated_query[:50]}...")
 
         result = searcher.search(
             query=validated_query,
@@ -446,15 +533,62 @@ async def search(request: Request, search_request: SearchRequest):
         result["request_id"] = request_id
 
         if result["status"] == "error":
+            # Record failed search
+            duration = time.time() - start_time
+            MetricsCollector.record_search(
+                store=search_request.store_name,
+                duration=duration,
+                results_count=0,
+                success=False
+            )
+            MetricsCollector.record_error(error_type="SearchError", endpoint="/api/search")
             raise HTTPException(status_code=400, detail=result["message"])
+
+        # Cache the successful result
+        search_cache.set(
+            validated_query,
+            search_request.store_name,
+            result,
+            **cache_key_params
+        )
+
+        # Record metrics
+        duration = time.time() - start_time
+        results_count = len(result.get("sources", []))
+        MetricsCollector.record_search(
+            store=search_request.store_name,
+            duration=duration,
+            results_count=results_count,
+            success=True
+        )
+
+        # Update cache size metrics
+        cache_stats = search_cache.get_stats()
+        MetricsCollector.update_cache_size("search", cache_stats["current_size"])
 
         return result
 
-    except FileSearchException:
+    except FileSearchException as e:
+        duration = time.time() - start_time
+        MetricsCollector.record_search(
+            store=search_request.store_name,
+            duration=duration,
+            results_count=0,
+            success=False
+        )
+        MetricsCollector.record_error(error_type=e.__class__.__name__, endpoint="/api/search")
         raise
     except HTTPException:
         raise
     except Exception as e:
+        duration = time.time() - start_time
+        MetricsCollector.record_search(
+            store=search_request.store_name,
+            duration=duration,
+            results_count=0,
+            success=False
+        )
+        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/search")
         logger.error(f"[{request_id}] Search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -562,15 +696,43 @@ async def delete_store(request: Request, store_name: str):
     return result
 
 
-# Metrics endpoint
+# Metrics endpoints
+@app.get("/prometheus", tags=["Monitoring"])
+@limiter.limit("100/minute")
+async def prometheus_metrics(request: Request):
+    """
+    Prometheus metrics endpoint (Rate limited: 100/min)
+
+    Returns:
+        Metrics in Prometheus text format
+
+    Exports:
+        - HTTP request metrics (counter, histogram)
+        - File upload metrics (counter, size, duration)
+        - Search metrics (counter, duration, results count)
+        - Cache metrics (hits, misses, size)
+        - Rate limit metrics
+        - Error metrics
+        - System metrics (CPU, memory, disk)
+    """
+    # Update stores count
+    if searcher:
+        stores = searcher.list_stores()
+        MetricsCollector.update_stores_count(len(stores))
+
+    # Get metrics in Prometheus format
+    metrics_text = get_metrics_text()
+    return Response(content=metrics_text, media_type=get_metrics_content_type())
+
+
 @app.get("/metrics", response_model=MetricsResponse, tags=["Monitoring"])
 @limiter.limit("100/minute")
 async def get_metrics(request: Request):
     """
-    Get enhanced service metrics (Rate limited: 100/min)
+    Get enhanced service metrics with cache statistics (Rate limited: 100/min)
 
     Returns:
-        Current metrics, configuration, and system info
+        Current metrics, configuration, system info, and cache statistics
     """
     if not searcher:
         raise ServiceUnavailableError("FileSearch", "Service not initialized")
@@ -578,6 +740,11 @@ async def get_metrics(request: Request):
     metrics = searcher.get_metrics()
     metrics["system"] = get_system_info()
     metrics["uptime_seconds"] = round(time.time() - startup_time, 2)
+
+    # Add cache statistics
+    cache_stats = get_all_cache_stats()
+    if cache_stats:
+        metrics["cache"] = cache_stats
 
     return metrics
 
@@ -603,6 +770,13 @@ async def root():
             "search": "POST /api/search or GET /api/search?q=... (100/min)",
             "stores": "GET /api/stores (100/min)",
             "metrics": "GET /metrics (100/min)",
+            "prometheus": "GET /prometheus (100/min)",
+        },
+        "features": {
+            "caching": "LRU cache with 1-hour TTL (1000 items)",
+            "monitoring": "Prometheus metrics at /prometheus",
+            "logging": "Structured JSON logging",
+            "security": "Rate limiting, request tracing, OWASP headers",
         },
         "rate_limits": {
             "upload_single": "10 requests per minute",
@@ -686,13 +860,21 @@ def main():
         print("  export GEMINI_API_KEY='your-key'")
         print("  flamehaven-api")
         print("\nDocs: http://localhost:8000/docs")
+        print("Prometheus: http://localhost:8000/prometheus")
         print("\nNew in v1.1.0:")
-        print("  - Rate limiting (slowapi)")
-        print("  - Request ID tracing")
-        print("  - Security headers")
-        print("  - Enhanced error handling")
-        print("  - Input validation")
-        print("  - System metrics")
+        print("  [*] Security:")
+        print("      - Path traversal vulnerability fixed")
+        print("      - Rate limiting (slowapi): 10/min uploads, 100/min searches")
+        print("      - Request ID tracing with X-Request-ID header")
+        print("      - OWASP security headers (HSTS, CSP, X-Frame-Options)")
+        print("      - Comprehensive input validation")
+        print("  [*] Performance:")
+        print("      - LRU caching with TTL (1000 items, 1-hour TTL)")
+        print("      - Structured JSON logging (set ENVIRONMENT=development for readable logs)")
+        print("  [*] Monitoring:")
+        print("      - Prometheus metrics at /prometheus")
+        print("      - System metrics (CPU, memory, disk)")
+        print("      - Cache hit/miss tracking")
         return
 
     # Validate API key
@@ -703,12 +885,18 @@ def main():
 
     print(f"Starting FLAMEHAVEN FileSearch API v1.1.0 on {host}:{port}")
     print(f"Workers: {workers}, Reload: {reload}")
-    print(f"Docs: http://{host}:{port}/docs")
+    print(f"\nEndpoints:")
+    print(f"  - Docs:       http://{host}:{port}/docs")
+    print(f"  - Health:     http://{host}:{port}/health")
+    print(f"  - Metrics:    http://{host}:{port}/metrics")
+    print(f"  - Prometheus: http://{host}:{port}/prometheus")
     print("\nFeatures:")
     print("  - Rate limiting: 10/min uploads, 100/min searches")
     print("  - Request tracing with X-Request-ID header")
     print("  - Security headers (OWASP compliant)")
-    print("  - Enhanced error handling")
+    print("  - LRU caching with 1-hour TTL (1000 items)")
+    print("  - Prometheus metrics export")
+    print("  - Structured JSON logging")
 
     uvicorn.run(
         "flamehaven_filesearch.api:app",
