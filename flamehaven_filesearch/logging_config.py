@@ -20,47 +20,48 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
 
         # Add service identification
-        log_record['service'] = 'flamehaven-filesearch'
-        log_record['version'] = '1.1.0'
+        log_record["service"] = "flamehaven-filesearch"
+        log_record["version"] = "1.1.0"
 
         # Add request ID if available
-        if hasattr(record, 'request_id'):
-            log_record['request_id'] = record.request_id
+        if hasattr(record, "request_id"):
+            log_record["request_id"] = record.request_id
 
         # Add environment (from env var or default to 'development')
         import os
-        log_record['environment'] = os.getenv('ENVIRONMENT', 'development')
+
+        log_record["environment"] = os.getenv("ENVIRONMENT", "development")
 
         # Ensure timestamp is present
-        if 'timestamp' not in log_record:
+        if "timestamp" not in log_record:
             from datetime import datetime
-            log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
+
+            log_record["timestamp"] = datetime.utcnow().isoformat() + "Z"
 
         # Add level name
-        log_record['level'] = record.levelname
+        log_record["level"] = record.levelname
 
 
-def setup_json_logging(log_level=logging.INFO):
+def setup_json_logging(log_level=logging.INFO, **kwargs):
     """
     Setup structured JSON logging for the application
 
     Args:
-        log_level: Logging level (default: INFO)
+        log_level: Logging level (default: INFO). Deprecated in favor of keyword "level".
     """
+    # Support logging.basicConfig-style signatures (level=...)
+    effective_level = kwargs.get("level", log_level)
+
     # Create JSON formatter
     formatter = CustomJsonFormatter(
-        '%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s %(service)s %(version)s %(environment)s',
-        rename_fields={
-            'levelname': 'level',
-            'name': 'logger',
-            'asctime': 'timestamp'
-        },
-        datefmt='%Y-%m-%dT%H:%M:%S'
+        "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s %(service)s %(version)s %(environment)s",
+        rename_fields={"levelname": "level", "name": "logger", "asctime": "timestamp"},
+        datefmt="%Y-%m-%dT%H:%M:%S",
     )
 
     # Configure root logger
     root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(effective_level)
 
     # Remove existing handlers
     for handler in root_logger.handlers[:]:
@@ -72,28 +73,29 @@ def setup_json_logging(log_level=logging.INFO):
     root_logger.addHandler(json_handler)
 
     # Set level for specific loggers
-    logging.getLogger('uvicorn.access').setLevel(logging.WARNING)
-    logging.getLogger('uvicorn.error').setLevel(logging.INFO)
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.error").setLevel(logging.INFO)
 
     return root_logger
 
 
-def setup_development_logging(log_level=logging.INFO):
+def setup_development_logging(log_level=logging.INFO, **kwargs):
     """
     Setup human-readable logging for development
 
     Args:
-        log_level: Logging level (default: INFO)
+        log_level: Logging level (default: INFO). Deprecated in favor of keyword "level".
     """
+    effective_level = kwargs.get("level", log_level)
     # Create formatter
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - [%(request_id)s] - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        "%(asctime)s - %(name)s - %(levelname)s - [%(request_id)s] - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # Configure root logger
     root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(effective_level)
 
     # Remove existing handlers
     for handler in root_logger.handlers[:]:
@@ -122,7 +124,7 @@ def get_logger_with_request_id(name: str, request_id: str = None):
 
     if request_id:
         # Use LoggerAdapter to inject request_id into all log records
-        return logging.LoggerAdapter(logger, {'request_id': request_id})
+        return logging.LoggerAdapter(logger, {"request_id": request_id})
 
     return logger
 
@@ -132,12 +134,12 @@ class RequestIdFilter(logging.Filter):
     Logging filter to add request ID to log records
     """
 
-    def __init__(self, request_id='N/A'):
+    def __init__(self, request_id="N/A"):
         super().__init__()
         self.request_id = request_id
 
     def filter(self, record):
-        if not hasattr(record, 'request_id'):
+        if not hasattr(record, "request_id"):
             record.request_id = self.request_id
         return True
 
@@ -177,7 +179,7 @@ EXAMPLE_LOGS = {
         "version": "1.1.0",
         "environment": "production",
         "filename": "document.pdf",
-        "size_mb": 2.5
+        "size_mb": 2.5,
     },
     "error": {
         "timestamp": "2025-11-13T12:00:01Z",
@@ -191,7 +193,7 @@ EXAMPLE_LOGS = {
         "error": "FileSizeExceededError",
         "error_message": "File size exceeds maximum",
         "filename": "large_file.pdf",
-        "size_mb": 100.0
+        "size_mb": 100.0,
     },
     "warning": {
         "timestamp": "2025-11-13T12:00:02Z",
@@ -204,6 +206,6 @@ EXAMPLE_LOGS = {
         "environment": "production",
         "endpoint": "/api/upload/single",
         "requests_count": 8,
-        "limit": 10
-    }
+        "limit": 10,
+    },
 }

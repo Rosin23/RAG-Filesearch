@@ -41,16 +41,19 @@ class TestPathTraversalProtection:
 
             # Should either reject (400) or sanitize the filename
             # After sanitization, only basename should remain
-            assert response.status_code in [200, 400], \
-                f"Unexpected status for {malicious_filename}: {response.status_code}"
+            assert response.status_code in [
+                200,
+                400,
+            ], f"Unexpected status for {malicious_filename}: {response.status_code}"
 
             if response.status_code == 200:
                 # If accepted, verify it was sanitized (only basename used)
                 result = response.json()
                 # The saved filename should be just the basename
                 basename = os.path.basename(malicious_filename)
-                assert basename in result.get("filename", ""), \
+                assert basename in result.get("filename", ""), (
                     f"Filename not properly sanitized: {malicious_filename}"
+                )
 
     def test_path_traversal_multiple_upload(self, client):
         """Test path traversal protection in multiple file upload"""
@@ -72,7 +75,9 @@ class TestPathTraversalProtection:
                 filename = file_info.get("filename", "")
                 # Should not contain path separators
                 assert ".." not in filename
-                assert "/" not in filename or filename.count("/") == filename.count(os.sep)
+                assert "/" not in filename or filename.count("/") == filename.count(
+                    os.sep
+                )
                 assert "\\" not in filename
 
     def test_hidden_file_rejection(self, client):
@@ -91,8 +96,9 @@ class TestPathTraversalProtection:
             )
 
             # Should reject hidden files
-            assert response.status_code == 400, \
+            assert response.status_code == 400, (
                 f"Hidden file not rejected: {hidden_file}"
+            )
             assert "Invalid filename" in response.json().get("detail", "")
 
     def test_empty_filename_rejection(self, client):
@@ -122,8 +128,10 @@ class TestPathTraversalProtection:
             )
 
             # Legitimate files should be accepted
-            assert response.status_code in [200, 201], \
-                f"Legitimate file rejected: {filename}"
+            assert response.status_code in [
+                200,
+                201,
+            ], f"Legitimate file rejected: {filename}"
 
 
 class TestInputValidation:
@@ -292,15 +300,6 @@ class TestSecurityHeaders:
     def test_security_headers_present(self, client):
         """Test that appropriate security headers are set"""
         response = client.get("/health")
-
-        # Check for security headers (these should be added in Phase 3)
-        # For now, document expected headers
-        expected_headers = [
-            # "X-Content-Type-Options",
-            # "X-Frame-Options",
-            # "X-XSS-Protection",
-            # "Strict-Transport-Security",
-        ]
 
         # This test will initially fail - headers to be added in Phase 3
         # Just verify response is valid

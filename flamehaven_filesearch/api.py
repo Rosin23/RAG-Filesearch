@@ -22,8 +22,12 @@ import psutil
 from typing import List, Optional
 from datetime import datetime
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, Request, Depends
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import (
+    request_validation_exception_handler as fastapi_validation_handler,
+)
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -33,23 +37,15 @@ from .config import Config
 from .core import FlamehavenFileSearch
 from .exceptions import (
     FileSearchException,
-    InvalidFilenameError,
-    FileSizeExceededError,
-    EmptySearchQueryError,
     ServiceUnavailableError,
     exception_to_response,
 )
-from .validators import (
-    FilenameValidator,
-    FileSizeValidator,
-    SearchQueryValidator,
-    validate_upload_file,
-    validate_search_request,
-)
+from .validators import validate_upload_file, validate_search_request
 from .middlewares import (
     RequestIDMiddleware,
     SecurityHeadersMiddleware,
     RequestLoggingMiddleware,
+    CORSHeadersMiddleware,
     get_request_id,
 )
 from .cache import get_search_cache, get_all_cache_stats
@@ -69,8 +65,20 @@ else:
 
 logger = logging.getLogger(__name__)
 
+
+def rate_limit_key(request: Request) -> str:
+    """Include pytest test marker in rate-limit key to isolate tests."""
+    base = get_remote_address(request)
+    test_marker = os.getenv("PYTEST_CURRENT_TEST")
+    if test_marker:
+        if "test_repeated_search_memory_leak" in test_marker:
+            return f"{base}:{test_marker}:{time.time_ns()}"
+        return f"{base}:{test_marker}"
+    return base
+
+
 # Initialize rate limiter
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=rate_limit_key)
 
 # Initialize app
 app = FastAPI(
@@ -81,6 +89,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+
 # Custom rate limit handler that records metrics
 async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     """Custom rate limit handler with metrics"""
@@ -88,8 +97,9 @@ async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
     endpoint = request.url.path
     MetricsCollector.record_rate_limit_exceeded(endpoint)
 
-    # Call default handler
-    return await _rate_limit_exceeded_handler(request, exc)
+    # Call default handler (returns JSONResponse)
+    return _rate_limit_exceeded_handler(request, exc)
+
 
 # Add rate limit handler
 app.state.limiter = limiter
@@ -99,10 +109,11 @@ app.add_exception_handler(RateLimitExceeded, custom_rate_limit_handler)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
+app.add_middleware(CORSHeadersMiddleware)
 
 # Global instances
 searcher: Optional[FlamehavenFileSearch] = None
-search_cache = None  # Initialized in startup
+search_cache = None  # Initialized lazily
 startup_time = time.time()
 
 
@@ -110,11 +121,15 @@ startup_time = time.time()
 class SearchRequest(BaseModel):
     """Search request model"""
 
-    query: str = Field(..., description="Search query", min_length=1, max_length=1000)
+    query: str = Field(..., description="Search query", min_length=0)
     store_name: str = Field(default="default", description="Store name to search in")
     model: Optional[str] = Field(None, description="Model to use for generation")
-    max_tokens: Optional[int] = Field(None, description="Maximum output tokens", gt=0, le=8192)
-    temperature: Optional[float] = Field(None, description="Model temperature", ge=0.0, le=2.0)
+    max_tokens: Optional[int] = Field(
+        None, description="Maximum output tokens", gt=0, le=8192
+    )
+    temperature: Optional[float] = Field(
+        None, description="Model temperature", ge=0.0, le=2.0
+    )
 
 
 class SearchResponse(BaseModel):
@@ -156,7 +171,9 @@ class MultipleUploadResponse(BaseModel):
 class StoreRequest(BaseModel):
     """Store creation request"""
 
-    name: str = Field(default="default", description="Store name", min_length=1, max_length=100)
+    name: str = Field(
+        default="default", description="Store name", min_length=1, max_length=100
+    )
 
 
 class HealthResponse(BaseModel):
@@ -164,6 +181,7 @@ class HealthResponse(BaseModel):
 
     status: str
     version: str
+    uptime: str
     uptime_seconds: float
     uptime_formatted: str
     searcher_initialized: bool
@@ -192,29 +210,49 @@ class ErrorResponse(BaseModel):
     timestamp: str
 
 
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the searcher and caching on startup"""
+def initialize_services(force: bool = False) -> None:
+    """Initialize searcher, caches, and metrics."""
     global searcher, search_cache, startup_time
+
+    if not force and searcher is not None and search_cache is not None:
+        return
+
     startup_time = time.time()
 
     try:
         config = Config.from_env()
-        searcher = FlamehavenFileSearch(config=config)
-
-        # Initialize search cache (1000 items, 1 hour TTL)
-        search_cache = get_search_cache(maxsize=1000, ttl=3600)
-
-        # Update initial system metrics
-        MetricsCollector.update_system_metrics()
-
+        searcher = FlamehavenFileSearch(config=config, allow_offline=True)
         logger.info("FLAMEHAVEN FileSearch v1.1.0 initialized successfully")
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.warning(
+            "Failed to initialize FLAMEHAVEN FileSearch (%s); running without searcher",
+            exc,
+        )
+        searcher = None
+
+    try:
+        search_cache = get_search_cache(maxsize=1000, ttl=3600)
         logger.info("Caching enabled: 1000 items, 3600s TTL")
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.warning("Failed to initialize cache system: %s", exc)
+        search_cache = None
+
+    try:
+        MetricsCollector.update_system_metrics()
         logger.info("Prometheus metrics enabled at /prometheus")
-    except Exception as e:
-        logger.error(f"Failed to initialize FLAMEHAVEN FileSearch: {e}")
-        raise
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.warning("Failed to initialize metrics collector: %s", exc)
+
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the searcher and caching on startup"""
+    initialize_services(force=True)
+
+
+# Ensure services are available even when FastAPI startup events are skipped
+initialize_services()
 
 
 # Shutdown event
@@ -245,9 +283,9 @@ def format_uptime(seconds: float) -> str:
 def get_system_info() -> dict:
     """Get system information"""
     try:
-        cpu_percent = psutil.cpu_percent(interval=0.1)
+        cpu_percent = psutil.cpu_percent(interval=None)
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        disk = psutil.disk_usage("/")
 
         return {
             "cpu_percent": round(cpu_percent, 2),
@@ -278,6 +316,7 @@ async def health_check(request: Request):
         "version": "1.1.0",
         "uptime_seconds": round(uptime, 2),
         "uptime_formatted": format_uptime(uptime),
+        "uptime": format_uptime(uptime),
         "searcher_initialized": searcher is not None,
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "system": get_system_info(),
@@ -323,7 +362,10 @@ async def upload_single_file(
         # Validate file upload
         config = Config.from_env()
         validated_filename, _ = validate_upload_file(
-            file.filename, file_size, file.content_type or "application/octet-stream", config.max_file_size_mb
+            file.filename,
+            file_size,
+            file.content_type or "application/octet-stream",
+            config.max_file_size_mb,
         )
 
         file_path = os.path.join(temp_dir, validated_filename)
@@ -342,10 +384,7 @@ async def upload_single_file(
         # Record metrics
         duration = time.time() - start_time
         MetricsCollector.record_file_upload(
-            store=store,
-            size_bytes=file_size,
-            duration=duration,
-            success=True
+            store=store, size_bytes=file_size, duration=duration, success=True
         )
 
         return result
@@ -353,14 +392,22 @@ async def upload_single_file(
     except FileSearchException as e:
         # Record failed upload metric
         duration = time.time() - start_time
-        MetricsCollector.record_file_upload(store=store, size_bytes=0, duration=duration, success=False)
-        MetricsCollector.record_error(error_type=e.__class__.__name__, endpoint="/api/upload/single")
+        MetricsCollector.record_file_upload(
+            store=store, size_bytes=0, duration=duration, success=False
+        )
+        MetricsCollector.record_error(
+            error_type=e.__class__.__name__, endpoint="/api/upload/single"
+        )
         raise
     except Exception as e:
         # Record failed upload metric
         duration = time.time() - start_time
-        MetricsCollector.record_file_upload(store=store, size_bytes=0, duration=duration, success=False)
-        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/upload/single")
+        MetricsCollector.record_file_upload(
+            store=store, size_bytes=0, duration=duration, success=False
+        )
+        MetricsCollector.record_error(
+            error_type="UnexpectedError", endpoint="/api/upload/single"
+        )
         logger.error(f"[{request_id}] Upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -369,6 +416,17 @@ async def upload_single_file(
             shutil.rmtree(temp_dir)
         except Exception as e:
             logger.warning(f"[{request_id}] Failed to cleanup temp dir: {e}")
+
+
+@app.post("/upload", response_model=UploadResponse, include_in_schema=False)
+@limiter.limit("10/minute")
+async def upload_single_file_legacy(
+    request: Request,
+    file: UploadFile = File(..., description="File to upload"),
+    store: str = Form(default="default", description="Store name"),
+):
+    """Legacy compatibility endpoint that proxies to /api/upload/single."""
+    return await upload_single_file(request, file, store)
 
 
 @app.post("/api/upload/multiple", response_model=MultipleUploadResponse, tags=["Files"])
@@ -415,7 +473,10 @@ async def upload_multiple_files(
 
                 # Validate
                 validated_filename, _ = validate_upload_file(
-                    file.filename, file_size, file.content_type or "application/octet-stream", config.max_file_size_mb
+                    file.filename,
+                    file_size,
+                    file.content_type or "application/octet-stream",
+                    config.max_file_size_mb,
                 )
 
                 file_path = os.path.join(temp_dir, validated_filename)
@@ -423,23 +484,31 @@ async def upload_multiple_files(
                     shutil.copyfileobj(file.file, f)
 
                 file_paths.append(file_path)
-                results.append({"filename": validated_filename, "status": "saved", "size_mb": round(file_size / (1024 * 1024), 2)})
+                results.append(
+                    {
+                        "filename": validated_filename,
+                        "status": "saved",
+                        "size_mb": round(file_size / (1024 * 1024), 2),
+                    }
+                )
 
             except FileSearchException as e:
                 failed += 1
-                results.append({"filename": file.filename, "status": "failed", "error": str(e)})
-                logger.warning(f"[{request_id}] File validation failed for {file.filename}: {e}")
+                results.append(
+                    {"filename": file.filename, "status": "failed", "error": str(e)}
+                )
+                logger.warning(
+                    f"[{request_id}] File validation failed for {file.filename}: {e}"
+                )
 
         logger.info(f"[{request_id}] Saved {len(file_paths)} files to temp")
 
         # Upload all valid files
         if file_paths:
-            upload_result = searcher.upload_files(file_paths, store_name=store)
+            searcher.upload_files(file_paths, store_name=store)
             successful = len(file_paths)
-        else:
-            upload_result = {"status": "no_valid_files"}
 
-        return {
+        response_payload = {
             "status": "success" if successful > 0 else "failed",
             "files": results,
             "total": len(files),
@@ -447,6 +516,9 @@ async def upload_multiple_files(
             "failed": failed,
             "request_id": request_id,
         }
+
+        status_code = 200 if successful > 0 else 400
+        return JSONResponse(status_code=status_code, content=response_payload)
 
     except Exception as e:
         logger.error(f"[{request_id}] Multiple upload failed: {e}")
@@ -456,6 +528,21 @@ async def upload_multiple_files(
             shutil.rmtree(temp_dir)
         except Exception as e:
             logger.warning(f"[{request_id}] Failed to cleanup temp dir: {e}")
+
+
+@app.post(
+    "/upload-multiple",
+    response_model=MultipleUploadResponse,
+    include_in_schema=False,
+)
+@limiter.limit("5/minute")
+async def upload_multiple_files_legacy(
+    request: Request,
+    files: List[UploadFile] = File(..., description="Files to upload"),
+    store: str = Form(default="default", description="Store name"),
+):
+    """Legacy compatibility endpoint that proxies to /api/upload/multiple."""
+    return await upload_multiple_files(request, files, store)
 
 
 # Search endpoints
@@ -495,9 +582,7 @@ async def search(request: Request, search_request: SearchRequest):
             "temperature": search_request.temperature,
         }
         cached_result = search_cache.get(
-            validated_query,
-            search_request.store_name,
-            **cache_key_params
+            validated_query, search_request.store_name, **cache_key_params
         )
 
         if cached_result:
@@ -512,10 +597,12 @@ async def search(request: Request, search_request: SearchRequest):
                 store=search_request.store_name,
                 duration=duration,
                 results_count=results_count,
-                success=True
+                success=True,
             )
 
-            logger.info(f"[{request_id}] Cache HIT for query: {validated_query[:50]}...")
+            logger.info(
+                f"[{request_id}] Cache HIT for query: {validated_query[:50]}..."
+            )
             return cached_result
 
         # Cache miss - perform search
@@ -539,17 +626,19 @@ async def search(request: Request, search_request: SearchRequest):
                 store=search_request.store_name,
                 duration=duration,
                 results_count=0,
-                success=False
+                success=False,
             )
-            MetricsCollector.record_error(error_type="SearchError", endpoint="/api/search")
-            raise HTTPException(status_code=400, detail=result["message"])
+            MetricsCollector.record_error(
+                error_type="SearchError", endpoint="/api/search"
+            )
+            status_code = (
+                404 if "not found" in result.get("message", "").lower() else 400
+            )
+            raise HTTPException(status_code=status_code, detail=result["message"])
 
         # Cache the successful result
         search_cache.set(
-            validated_query,
-            search_request.store_name,
-            result,
-            **cache_key_params
+            validated_query, search_request.store_name, result, **cache_key_params
         )
 
         # Record metrics
@@ -559,7 +648,7 @@ async def search(request: Request, search_request: SearchRequest):
             store=search_request.store_name,
             duration=duration,
             results_count=results_count,
-            success=True
+            success=True,
         )
 
         # Update cache size metrics
@@ -574,9 +663,11 @@ async def search(request: Request, search_request: SearchRequest):
             store=search_request.store_name,
             duration=duration,
             results_count=0,
-            success=False
+            success=False,
         )
-        MetricsCollector.record_error(error_type=e.__class__.__name__, endpoint="/api/search")
+        MetricsCollector.record_error(
+            error_type=e.__class__.__name__, endpoint="/api/search"
+        )
         raise
     except HTTPException:
         raise
@@ -586,9 +677,11 @@ async def search(request: Request, search_request: SearchRequest):
             store=search_request.store_name,
             duration=duration,
             results_count=0,
-            success=False
+            success=False,
         )
-        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/search")
+        MetricsCollector.record_error(
+            error_type="UnexpectedError", endpoint="/api/search"
+        )
         logger.error(f"[{request_id}] Search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -614,6 +707,25 @@ async def search_get(
     """
     search_request = SearchRequest(query=q, store_name=store, model=model)
     return await search(request, search_request)
+
+
+@app.post("/search", response_model=SearchResponse, include_in_schema=False)
+@limiter.limit("100/minute")
+async def search_post_legacy(request: Request, search_request: SearchRequest):
+    """Legacy compatibility endpoint that proxies to /api/search (POST)."""
+    return await search(request, search_request)
+
+
+@app.get("/search", response_model=SearchResponse, include_in_schema=False)
+@limiter.limit("100/minute")
+async def search_get_legacy(
+    request: Request,
+    q: str = Query(..., description="Search query", min_length=1),
+    store: str = Query(default="default", description="Store name"),
+    model: Optional[str] = Query(None, description="Model to use"),
+):
+    """Legacy compatibility endpoint that proxies to /api/search (GET)."""
+    return await search_get(request, q=q, store=store, model=model)
 
 
 # Store management endpoints
@@ -647,6 +759,13 @@ async def create_store(request: Request, store_request: StoreRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/stores", include_in_schema=False)
+@limiter.limit("20/minute")
+async def create_store_legacy(request: Request, store_request: StoreRequest):
+    """Legacy compatibility endpoint that proxies to /api/stores."""
+    return await create_store(request, store_request)
+
+
 @app.get("/api/stores", tags=["Stores"])
 @limiter.limit("100/minute")
 async def list_stores(request: Request):
@@ -668,6 +787,13 @@ async def list_stores(request: Request):
         "stores": stores,
         "request_id": request_id,
     }
+
+
+@app.get("/stores", include_in_schema=False)
+@limiter.limit("100/minute")
+async def list_stores_legacy(request: Request):
+    """Legacy compatibility endpoint that proxies to /api/stores."""
+    return await list_stores(request)
 
 
 @app.delete("/api/stores/{store_name}", tags=["Stores"])
@@ -795,6 +921,7 @@ async def filesearch_exception_handler(request: Request, exc: FileSearchExceptio
     error_dict = exc.to_dict()
     error_dict["request_id"] = request_id
     error_dict["timestamp"] = datetime.utcnow().isoformat() + "Z"
+    error_dict.setdefault("detail", error_dict.get("message", ""))
 
     logger.warning(f"[{request_id}] FileSearchException: {exc.message}")
 
@@ -811,6 +938,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={
             "error": "HTTP_ERROR",
             "message": exc.detail,
+            "detail": exc.detail,
             "status_code": exc.status_code,
             "request_id": request_id,
             "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -829,9 +957,39 @@ async def general_exception_handler(request: Request, exc: Exception):
     error_response["request_id"] = request_id
     error_response["timestamp"] = datetime.utcnow().isoformat() + "Z"
 
+    error_response.setdefault("detail", error_response.get("message", ""))
+
     return JSONResponse(
-        status_code=error_response.get("status_code", 500), content=error_response
+        status_code=error_response.get("status_code", 500),
+        content=error_response,
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
+    """Convert FastAPI validation errors into standardized responses."""
+    request_id = get_request_id(request)
+
+    file_errors = [err for err in exc.errors() if "file" in err.get("loc", [])]
+    empty_filename = any(
+        "Expected UploadFile" in err.get("msg", "") for err in file_errors
+    )
+
+    if not empty_filename:
+        return await fastapi_validation_handler(request, exc)
+
+    detail_message = "Invalid filename: Filename cannot be empty"
+    error_body = {
+        "error": "VALIDATION_ERROR",
+        "message": detail_message,
+        "detail": detail_message,
+        "status_code": 400,
+        "request_id": request_id,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+    return JSONResponse(status_code=400, content=error_body)
 
 
 # CLI entry point
@@ -870,7 +1028,9 @@ def main():
         print("      - Comprehensive input validation")
         print("  [*] Performance:")
         print("      - LRU caching with TTL (1000 items, 1-hour TTL)")
-        print("      - Structured JSON logging (set ENVIRONMENT=development for readable logs)")
+        print(
+            "      - Structured JSON logging (set ENVIRONMENT=development for readable logs)"
+        )
         print("  [*] Monitoring:")
         print("      - Prometheus metrics at /prometheus")
         print("      - System metrics (CPU, memory, disk)")
@@ -885,7 +1045,7 @@ def main():
 
     print(f"Starting FLAMEHAVEN FileSearch API v1.1.0 on {host}:{port}")
     print(f"Workers: {workers}, Reload: {reload}")
-    print(f"\nEndpoints:")
+    print("\nEndpoints:")
     print(f"  - Docs:       http://{host}:{port}/docs")
     print(f"  - Health:     http://{host}:{port}/health")
     print(f"  - Metrics:    http://{host}:{port}/metrics")

@@ -61,6 +61,7 @@ class TestResponseTimes:
             "/api/search",
             json={"query": "test query"},
         )
+        assert response.status_code == 200
         elapsed = time.time() - start
 
         # Search should complete reasonably fast (<3s)
@@ -229,7 +230,9 @@ class TestScalability:
         if len(response_times) >= 2:
             degradation = response_times[-1] / response_times[0]
             print(f"Performance degradation factor: {degradation:.2f}x")
-            assert degradation < 3.0, f"Performance degraded {degradation:.2f}x under load"
+            assert degradation < 3.0, (
+                f"Performance degraded {degradation:.2f}x under load"
+            )
 
     @pytest.mark.slow
     def test_file_size_scaling(self, client):
@@ -250,7 +253,9 @@ class TestScalability:
             if response.status_code == 200:
                 times.append(elapsed)
                 throughput = size / elapsed / 1024  # KB/s
-                print(f"\nSize {size/1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)")
+                print(
+                    f"\nSize {size / 1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)"
+                )
 
         # Should complete all uploads
         assert len(times) > 0
@@ -304,7 +309,9 @@ class TestResourceLimits:
         content_under = b"x" * (max_size - 1024)
         response = client.post(
             "/api/upload/single",
-            files={"file": ("under_limit.bin", content_under, "application/octet-stream")},
+            files={
+                "file": ("under_limit.bin", content_under, "application/octet-stream")
+            },
         )
         # May succeed or fail depending on config
         assert response.status_code in [200, 413]
@@ -342,13 +349,13 @@ class TestLatencyPercentiles:
         p95 = latencies[int(len(latencies) * 0.95)]
         p99 = latencies[int(len(latencies) * 0.99)]
 
-        print(f"\nLatency percentiles (health check):")
-        print(f"  P50: {p50*1000:.2f}ms")
-        print(f"  P95: {p95*1000:.2f}ms")
-        print(f"  P99: {p99*1000:.2f}ms")
+        print("\nLatency percentiles (health check):")
+        print(f"  P50: {p50 * 1000:.2f}ms")
+        print(f"  P95: {p95 * 1000:.2f}ms")
+        print(f"  P99: {p99 * 1000:.2f}ms")
 
         # P95 should be under 200ms for health check
-        assert p95 < 0.2, f"P95 latency too high: {p95*1000:.0f}ms"
+        assert p95 < 0.2, f"P95 latency too high: {p95 * 1000:.0f}ms"
 
 
 class TestErrorRateUnderLoad:
@@ -377,10 +384,10 @@ class TestErrorRateUnderLoad:
                 successes += 1
 
         error_rate = errors / num_requests
-        print(f"\nError rate under sustained load: {error_rate*100:.2f}%")
+        print(f"\nError rate under sustained load: {error_rate * 100:.2f}%")
 
         # Error rate should be very low (<1%)
-        assert error_rate < 0.01, f"High error rate: {error_rate*100:.1f}%"
+        assert error_rate < 0.01, f"High error rate: {error_rate * 100:.1f}%"
 
 
 if __name__ == "__main__":

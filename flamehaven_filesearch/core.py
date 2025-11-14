@@ -33,7 +33,12 @@ class FlamehavenFileSearch:
         >>> print(answer['answer'])
     """
 
-    def __init__(self, api_key: Optional[str] = None, config: Optional[Config] = None):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        config: Optional[Config] = None,
+        allow_offline: bool = False,
+    ):
         """
         Initialize FLAMEHAVEN FileSearch
 
@@ -45,7 +50,7 @@ class FlamehavenFileSearch:
         self._use_native_client = bool(google_genai)
 
         # Validate config - API key required only for remote mode
-        self.config.validate(require_api_key=self._use_native_client)
+        self.config.validate(require_api_key=not allow_offline)
 
         self._local_store_docs: Dict[str, List[Dict[str, str]]] = {}
         self.client = None
@@ -328,8 +333,7 @@ class FlamehavenFileSearch:
             return {
                 "status": "error",
                 "message": (
-                    f"Store '{store_name}' not found. "
-                    "Create it first or upload files."
+                    f"Store '{store_name}' not found. Create it first or upload files."
                 ),
             }
 

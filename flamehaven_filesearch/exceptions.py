@@ -39,8 +39,8 @@ class FileSearchException(Exception):
 class FileUploadError(FileSearchException):
     """Base class for file upload related errors"""
 
-    def __init__(self, message: str, **kwargs):
-        super().__init__(message, status_code=400, error_code="FILE_UPLOAD_ERROR", **kwargs)
+    def __init__(self, message: str, error_code: str = "FILE_UPLOAD_ERROR", **kwargs):
+        super().__init__(message, status_code=400, error_code=error_code, **kwargs)
 
 
 class FileSizeExceededError(FileUploadError):
@@ -97,8 +97,8 @@ class FileProcessingError(FileUploadError):
 class SearchError(FileSearchException):
     """Base class for search related errors"""
 
-    def __init__(self, message: str, **kwargs):
-        super().__init__(message, status_code=400, error_code="SEARCH_ERROR", **kwargs)
+    def __init__(self, message: str, error_code: str = "SEARCH_ERROR", **kwargs):
+        super().__init__(message, status_code=400, error_code=error_code, **kwargs)
 
 
 class EmptySearchQueryError(SearchError):
@@ -115,7 +115,10 @@ class InvalidSearchQueryError(SearchError):
     """Invalid search query format or content"""
 
     def __init__(self, query: str, reason: str = "Invalid query"):
-        details = {"query": query[:100], "reason": reason}  # Limit query length in error
+        details = {
+            "query": query[:100],
+            "reason": reason,
+        }  # Limit query length in error
         super().__init__(
             f"Invalid search query: {reason}",
             error_code="INVALID_SEARCH_QUERY",
@@ -154,7 +157,9 @@ class ConfigurationError(FileSearchException):
     """Configuration related errors"""
 
     def __init__(self, message: str, **kwargs):
-        super().__init__(message, status_code=500, error_code="CONFIGURATION_ERROR", **kwargs)
+        super().__init__(
+            message, status_code=500, error_code="CONFIGURATION_ERROR", **kwargs
+        )
 
 
 class MissingAPIKeyError(ConfigurationError):
@@ -280,7 +285,9 @@ class ResourceNotFoundError(FileSearchException):
 class ResourceConflictError(FileSearchException):
     """Resource already exists or conflict"""
 
-    def __init__(self, resource_type: str, resource_id: str, reason: Optional[str] = None):
+    def __init__(
+        self, resource_type: str, resource_id: str, reason: Optional[str] = None
+    ):
         details = {"resource_type": resource_type, "resource_id": resource_id}
         if reason:
             details["reason"] = reason

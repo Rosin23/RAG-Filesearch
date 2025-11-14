@@ -156,7 +156,10 @@ class TestAPIIntegration:
         """Test enhanced metrics endpoint"""
         response = client.get("/metrics")
 
-        assert response.status_code in [200, 503]  # May be unavailable if searcher not init
+        assert response.status_code in [
+            200,
+            503,
+        ]  # May be unavailable if searcher not init
 
         if response.status_code == 200:
             data = response.json()
@@ -263,7 +266,12 @@ class TestAPIIntegration:
         # Test various error scenarios
         test_cases = [
             # (endpoint, method, data, files)
-            ("/api/upload/single", "POST", {"store": "test"}, {"file": (".hidden.txt", b"x", "text/plain")}),
+            (
+                "/api/upload/single",
+                "POST",
+                {"store": "test"},
+                {"file": (".hidden.txt", b"x", "text/plain")},
+            ),
             ("/api/search", "POST", {"query": ""}, None),
         ]
 
@@ -279,7 +287,9 @@ class TestAPIIntegration:
                     error_data = response.json()
                     assert "error" in error_data or "status" in error_data
                     assert "message" in error_data or "detail" in error_data
-                    assert "request_id" in error_data or "X-Request-ID" in response.headers
+                    assert (
+                        "request_id" in error_data or "X-Request-ID" in response.headers
+                    )
 
     def test_multiple_upload_workflow(self, client):
         """Test multiple file upload workflow"""

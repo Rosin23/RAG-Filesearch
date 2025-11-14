@@ -7,8 +7,6 @@ Validators for file uploads, search queries, and configuration parameters.
 import os
 import re
 from typing import Optional, List, Tuple
-from pathlib import Path
-
 from .exceptions import (
     InvalidFilenameError,
     FileSizeExceededError,
@@ -62,7 +60,8 @@ class FilenameValidator:
         for pattern in cls.PATH_TRAVERSAL_PATTERNS:
             if re.search(pattern, filename):
                 raise InvalidFilenameError(
-                    filename, "Path traversal detected - filename must not contain path components"
+                    filename,
+                    "Path traversal detected - filename must not contain path components",
                 )
 
         # Check for directory separators
@@ -70,7 +69,9 @@ class FilenameValidator:
             # Extract basename (last component)
             filename = os.path.basename(filename)
             if not filename:
-                raise InvalidFilenameError(filename, "Invalid path - no filename component")
+                raise InvalidFilenameError(
+                    filename, "Invalid path - no filename component"
+                )
 
         # Check for hidden files (starting with .)
         if filename.startswith("."):
@@ -83,7 +84,8 @@ class FilenameValidator:
         # Check length
         if len(filename) > cls.MAX_FILENAME_LENGTH:
             raise InvalidFilenameError(
-                filename, f"Filename too long (max {cls.MAX_FILENAME_LENGTH} characters)"
+                filename,
+                f"Filename too long (max {cls.MAX_FILENAME_LENGTH} characters)",
             )
 
         # Check for reserved names (Windows)
@@ -113,7 +115,9 @@ class FilenameValidator:
         ]
         name_without_ext = os.path.splitext(filename)[0].upper()
         if name_without_ext in reserved_names:
-            raise InvalidFilenameError(filename, f"Reserved filename: {name_without_ext}")
+            raise InvalidFilenameError(
+                filename, f"Reserved filename: {name_without_ext}"
+            )
 
         return filename
 
@@ -235,7 +239,9 @@ class SearchQueryValidator:
         if strict:
             for pattern in cls.SUSPICIOUS_PATTERNS:
                 if re.search(pattern, query, re.IGNORECASE):
-                    raise InvalidSearchQueryError(query, "Query contains suspicious patterns")
+                    raise InvalidSearchQueryError(
+                        query, "Query contains suspicious patterns"
+                    )
 
         return query
 
@@ -394,7 +400,10 @@ class MimeTypeValidator:
 
     @classmethod
     def validate_mime_type(
-        cls, mime_type: str, allow_all: bool = False, custom_allowed: Optional[List[str]] = None
+        cls,
+        mime_type: str,
+        allow_all: bool = False,
+        custom_allowed: Optional[List[str]] = None,
     ) -> bool:
         """
         Validate MIME type
@@ -461,7 +470,9 @@ def validate_upload_file(
     return validated_filename, mime_valid
 
 
-def validate_search_request(query: str, max_results: Optional[int] = None) -> Tuple[str, int]:
+def validate_search_request(
+    query: str, max_results: Optional[int] = None
+) -> Tuple[str, int]:
     """
     Validate search request parameters
 

@@ -4,8 +4,6 @@ Edge Case Test Suite for FLAMEHAVEN FileSearch
 Tests boundary conditions, unusual inputs, and error scenarios.
 """
 
-import io
-import os
 import pytest
 from fastapi.testclient import TestClient
 from flamehaven_filesearch.api import app
@@ -301,7 +299,13 @@ class TestConcurrencyEdgeCases:
         def upload_file(index):
             return client.post(
                 "/api/upload/single",
-                files={"file": (f"file{index}.txt", f"content{index}".encode(), "text/plain")},
+                files={
+                    "file": (
+                        f"file{index}.txt",
+                        f"content{index}".encode(),
+                        "text/plain",
+                    )
+                },
             )
 
         # Upload 10 files concurrently

@@ -43,8 +43,12 @@ class Config:
         """Load API key from environment if not provided"""
         if self.api_key is None:
             self.api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if self.api_key is not None:
+            self.api_key = self.api_key.strip()
+            if not self.api_key:
+                self.api_key = None
 
-    def validate(self, require_api_key: bool = False) -> bool:
+    def validate(self, require_api_key: bool = True) -> bool:
         """
         Validate configuration
 
@@ -53,10 +57,7 @@ class Config:
                            (for offline/local-only mode)
         """
         if require_api_key and not self.api_key:
-            raise ValueError(
-                "API key required for remote mode. Set GEMINI_API_KEY or GOOGLE_API_KEY "
-                "environment variable, or pass api_key parameter."
-            )
+            raise ValueError("API key required (API key not provided)")
 
         if self.max_file_size_mb <= 0:
             raise ValueError("max_file_size_mb must be positive")

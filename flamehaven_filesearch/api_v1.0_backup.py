@@ -164,7 +164,7 @@ async def upload_file(
     try:
         # SECURITY: Sanitize filename to prevent path traversal attacks
         safe_filename = os.path.basename(file.filename)
-        if not safe_filename or safe_filename.startswith('.'):
+        if not safe_filename or safe_filename.startswith("."):
             raise HTTPException(status_code=400, detail="Invalid filename")
 
         file_path = os.path.join(temp_dir, safe_filename)
@@ -217,8 +217,10 @@ async def upload_multiple_files(
         for file in files:
             # SECURITY: Sanitize filename to prevent path traversal attacks
             safe_filename = os.path.basename(file.filename)
-            if not safe_filename or safe_filename.startswith('.'):
-                raise HTTPException(status_code=400, detail=f"Invalid filename: {file.filename}")
+            if not safe_filename or safe_filename.startswith("."):
+                raise HTTPException(
+                    status_code=400, detail=f"Invalid filename: {file.filename}"
+                )
 
             file_path = os.path.join(temp_dir, safe_filename)
             with open(file_path, "wb") as f:
