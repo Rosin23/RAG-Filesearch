@@ -6,6 +6,7 @@ Tests complete API workflows with rate limiting, validation, and error handling.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from flamehaven_filesearch.api import app
 
 

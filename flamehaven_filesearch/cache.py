@@ -5,9 +5,10 @@ LRU caching for search results and file metadata with TTL support.
 """
 
 import hashlib
-from typing import Any, Optional, Dict
-from cachetools import TTLCache, LRUCache
 import logging
+from typing import Any, Dict, Optional
+
+from cachetools import LRUCache, TTLCache
 
 logger = logging.getLogger(__name__)
 

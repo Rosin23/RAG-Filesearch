@@ -4,18 +4,19 @@ Prometheus metrics for FLAMEHAVEN FileSearch
 Comprehensive application metrics for monitoring and alerting.
 """
 
+import logging
+import time
+
+import psutil
 from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    CollectorRegistry,
     Counter,
-    Histogram,
     Gauge,
+    Histogram,
     Info,
     generate_latest,
-    CONTENT_TYPE_LATEST,
 )
-from prometheus_client import CollectorRegistry
-import time
-import psutil
-import logging
 
 logger = logging.getLogger(__name__)
 

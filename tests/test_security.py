@@ -5,8 +5,10 @@ Tests path traversal protection, input validation, and security features.
 """
 
 import os
+
 import pytest
 from fastapi.testclient import TestClient
+
 from flamehaven_filesearch.api import app
 
 

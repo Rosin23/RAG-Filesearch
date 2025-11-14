@@ -16,8 +16,8 @@ from flamehaven_filesearch.exceptions import (
 )
 from flamehaven_filesearch.validators import (
     ConfigValidator,
-    FileSizeValidator,
     FilenameValidator,
+    FileSizeValidator,
     MimeTypeValidator,
     SearchQueryValidator,
     validate_search_request,

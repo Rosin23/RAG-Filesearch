@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+import flamehaven_filesearch.metrics as metrics_module
 from flamehaven_filesearch import core as core_module
 from flamehaven_filesearch.api import main as api_main
 from flamehaven_filesearch.metrics import (
@@ -11,7 +12,6 @@ from flamehaven_filesearch.metrics import (
     get_metrics_content_type,
     get_metrics_text,
 )
-import flamehaven_filesearch.metrics as metrics_module
 
 
 def test_metrics_collector_records_and_exports():

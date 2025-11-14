@@ -18,21 +18,22 @@ import os
 import shutil
 import tempfile
 import time
-import psutil
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, Request
-from fastapi.responses import JSONResponse, Response
-from fastapi.exceptions import RequestValidationError
+import psutil
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.exception_handlers import (
     request_validation_exception_handler as fastapi_validation_handler,
 )
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
+from .cache import get_all_cache_stats, get_search_cache
 from .config import Config
 from .core import FlamehavenFileSearch
 from .exceptions import (
@@ -40,21 +41,16 @@ from .exceptions import (
     ServiceUnavailableError,
     exception_to_response,
 )
-from .validators import validate_upload_file, validate_search_request
+from .logging_config import setup_development_logging, setup_json_logging
+from .metrics import MetricsCollector, get_metrics_content_type, get_metrics_text
 from .middlewares import (
-    RequestIDMiddleware,
-    SecurityHeadersMiddleware,
-    RequestLoggingMiddleware,
     CORSHeadersMiddleware,
+    RequestIDMiddleware,
+    RequestLoggingMiddleware,
+    SecurityHeadersMiddleware,
     get_request_id,
 )
-from .cache import get_search_cache, get_all_cache_stats
-from .metrics import (
-    MetricsCollector,
-    get_metrics_text,
-    get_metrics_content_type,
-)
-from .logging_config import setup_json_logging, setup_development_logging
+from .validators import validate_search_request, validate_upload_file
 
 # Configure structured JSON logging for production
 # Use ENVIRONMENT=development for human-readable logs
@@ -996,6 +992,7 @@ async def request_validation_exception_handler(
 def main():
     """Main entry point for CLI"""
     import sys
+
     import uvicorn
 
     # Parse simple arguments

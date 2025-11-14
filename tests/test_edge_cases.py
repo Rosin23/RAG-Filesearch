@@ -6,6 +6,7 @@ Tests boundary conditions, unusual inputs, and error scenarios.
 
 import pytest
 from fastapi.testclient import TestClient
+
 from flamehaven_filesearch.api import app
 from flamehaven_filesearch.config import Config
 

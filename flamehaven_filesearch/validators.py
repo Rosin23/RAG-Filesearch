@@ -6,11 +6,12 @@ Validators for file uploads, search queries, and configuration parameters.
 
 import os
 import re
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
+
 from .exceptions import (
-    InvalidFilenameError,
-    FileSizeExceededError,
     EmptySearchQueryError,
+    FileSizeExceededError,
+    InvalidFilenameError,
     InvalidSearchQueryError,
     ValidationError,
 )

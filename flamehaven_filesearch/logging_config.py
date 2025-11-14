@@ -6,6 +6,7 @@ Production-ready logging with JSON format for log aggregation systems.
 
 import logging
 import sys
+
 from pythonjsonlogger import jsonlogger
 
 

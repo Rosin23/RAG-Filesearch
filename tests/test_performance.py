@@ -5,8 +5,10 @@ Tests performance characteristics, response times, and throughput.
 """
 
 import time
+
 import pytest
 from fastapi.testclient import TestClient
+
 from flamehaven_filesearch.api import app
 
 

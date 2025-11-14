@@ -4,7 +4,7 @@ Custom exception classes for FLAMEHAVEN FileSearch
 Standardized error handling with proper HTTP status codes and error messages.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 
 class FileSearchException(Exception):
