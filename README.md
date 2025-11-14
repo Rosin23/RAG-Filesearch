@@ -483,7 +483,9 @@ flamehaven-api
 - v1.1.0: Production-ready with caching, rate limiting, Prometheus metrics
 - v1.0.0: Initial release with core file search capabilities
 
-→ [Full changelog](CHANGELOG.md) • [Roadmap & voting](#-roadmap)
+→ [Full changelog](CHANGELOG.md) • [Roadmap & voting](docs/wiki/Roadmap.md)
+
+Need more detail? The [roadmap wiki page](docs/wiki/Roadmap.md) includes the latest milestone poll, backlog status, and guidance on claiming good-first issues.
 
 ---
 
@@ -498,7 +500,7 @@ We welcome contributions!
 4. Add tests & commit changes
 5. Open Pull Request
 
-→ [Contributing guidelines](CONTRIBUTING.md) • [Good first issues](https://github.com/flamehaven01/Flamehaven-Filesearch/labels/good%20first%20issue)
+→ [Contributing guidelines](CONTRIBUTING.md) • [Good first issues](https://github.com/flamehaven01/Flamehaven-Filesearch/labels/good%20first%20issue) • [Roadmap & voting handbook](docs/wiki/Roadmap.md#3-good-first-issues)
 
 ---
 
@@ -540,3 +542,5 @@ Made with ❤️ by the Flamehaven Team
 [⬆️ Back to Top](#-flamehaven-filesearch)
 
 </div>
+
+
