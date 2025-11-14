@@ -62,7 +62,10 @@ class FilenameValidator:
             if re.search(pattern, filename):
                 raise InvalidFilenameError(
                     filename,
-                    "Path traversal detected - filename must not contain path components",
+                    (
+                        "Path traversal detected - filename must not contain "
+                        "path components"
+                    ),
                 )
 
         # Check for directory separators

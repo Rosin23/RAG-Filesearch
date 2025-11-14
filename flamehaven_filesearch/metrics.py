@@ -353,7 +353,8 @@ http_requests_total{method="POST",endpoint="/api/search",status="200"} 150.0
 # HELP http_request_duration_seconds HTTP request duration in seconds
 # TYPE http_request_duration_seconds histogram
 http_request_duration_seconds_bucket{method="POST",endpoint="/api/search",le="0.1"} 50.0
-http_request_duration_seconds_bucket{method="POST",endpoint="/api/search",le="0.5"} 120.0
+http_request_duration_seconds_bucket{method="POST",endpoint="/api/search",
+le="0.5"} 120.0
 http_request_duration_seconds_sum{method="POST",endpoint="/api/search"} 45.2
 http_request_duration_seconds_count{method="POST",endpoint="/api/search"} 150.0
 

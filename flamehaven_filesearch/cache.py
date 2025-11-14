@@ -91,7 +91,8 @@ class SearchResultCache:
             else:
                 self.misses += 1
                 logger.debug(
-                    f"Cache MISS: {key[:16]}... (hits={self.hits}, misses={self.misses})"
+                    f"Cache MISS: {key[:16]}... "
+                    f"(hits={self.hits}, misses={self.misses})"
                 )
                 return None
 
@@ -252,7 +253,6 @@ def get_file_cache(maxsize: int = 500) -> FileMetadataCache:
 
 def reset_all_caches():
     """Reset all global caches"""
-    global _search_cache, _file_cache
 
     if _search_cache:
         _search_cache.invalidate()

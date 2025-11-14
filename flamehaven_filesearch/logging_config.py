@@ -48,15 +48,21 @@ def setup_json_logging(log_level=logging.INFO, **kwargs):
     Setup structured JSON logging for the application
 
     Args:
-        log_level: Logging level (default: INFO). Deprecated in favor of keyword "level".
+        log_level: Logging level (default: INFO). Deprecated in favor of keyword
+            "level".
     """
     # Support logging.basicConfig-style signatures (level=...)
     effective_level = kwargs.get("level", log_level)
 
     # Create JSON formatter
     formatter = CustomJsonFormatter(
-        "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s %(service)s %(version)s %(environment)s",
-        rename_fields={"levelname": "level", "name": "logger", "asctime": "timestamp"},
+        "%(timestamp)s %(level)s %(name)s %(message)s %(request_id)s "
+        "%(service)s %(version)s %(environment)s",
+        rename_fields={
+            "levelname": "level",
+            "name": "logger",
+            "asctime": "timestamp",
+        },
         datefmt="%Y-%m-%dT%H:%M:%S",
     )
 
@@ -85,7 +91,8 @@ def setup_development_logging(log_level=logging.INFO, **kwargs):
     Setup human-readable logging for development
 
     Args:
-        log_level: Logging level (default: INFO). Deprecated in favor of keyword "level".
+        log_level: Logging level (default: INFO). Deprecated in favor of keyword
+            "level".
     """
     effective_level = kwargs.get("level", log_level)
     # Create formatter

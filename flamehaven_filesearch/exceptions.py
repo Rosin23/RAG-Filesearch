@@ -54,7 +54,10 @@ class FileSizeExceededError(FileUploadError):
         if filename:
             details["filename"] = filename
 
-        message = f"File size ({details['file_size_mb']}MB) exceeds maximum allowed ({max_size}MB)"
+        message = (
+            f"File size ({details['file_size_mb']}MB) exceeds maximum allowed "
+            f"({max_size}MB)"
+        )
         super().__init__(message, error_code="FILE_SIZE_EXCEEDED", details=details)
 
 
@@ -167,7 +170,10 @@ class MissingAPIKeyError(ConfigurationError):
 
     def __init__(self):
         super().__init__(
-            "API key is required for remote mode. Set GEMINI_API_KEY or GOOGLE_API_KEY environment variable.",
+            (
+                "API key is required for remote mode. "
+                "Set GEMINI_API_KEY or GOOGLE_API_KEY environment variable."
+            ),
             error_code="MISSING_API_KEY",
         )
 

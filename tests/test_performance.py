@@ -256,7 +256,8 @@ class TestScalability:
                 times.append(elapsed)
                 throughput = size / elapsed / 1024  # KB/s
                 print(
-                    f"\nSize {size / 1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)"
+                    "\nSize "
+                    f"{size / 1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)"
                 )
 
         # Should complete all uploads

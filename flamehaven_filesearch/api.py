@@ -79,7 +79,9 @@ limiter = Limiter(key_func=rate_limit_key)
 # Initialize app
 app = FastAPI(
     title="FLAMEHAVEN FileSearch API",
-    description="Open source semantic document search powered by Google Gemini - v1.1.0",
+    description=(
+        "Open source semantic document search powered by Google Gemini " "- v1.1.0"
+    ),
     version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -1026,7 +1028,8 @@ def main():
         print("  [*] Performance:")
         print("      - LRU caching with TTL (1000 items, 1-hour TTL)")
         print(
-            "      - Structured JSON logging (set ENVIRONMENT=development for readable logs)"
+            "      - Structured JSON logging "
+            "(set ENVIRONMENT=development for readable logs)"
         )
         print("  [*] Monitoring:")
         print("      - Prometheus metrics at /prometheus")
