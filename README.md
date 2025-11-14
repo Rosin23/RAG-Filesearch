@@ -1,6 +1,11 @@
 # 🔥 FLAMEHAVEN FileSearch
 
-**Open-source semantic document search you can self-host in minutes.**
+<div align="center">
+
+<strong>Open-source semantic document search you can self-host in minutes.</strong><br/>
+<span>The lightweight RAG stack that makes your documents searchable in minutes.</span>
+
+</div>
 
 [![CI/CD](https://github.com/flamehaven01/Flamehaven-Filesearch/actions/workflows/ci.yml/badge.svg)](https://github.com/flamehaven01/Flamehaven-Filesearch/actions)
 [![PyPI](https://img.shields.io/pypi/v/flamehaven-filesearch.svg)](https://pypi.org/project/flamehaven-filesearch/)
@@ -9,15 +14,13 @@
 
 <div align="center">
 
-**The lightweight RAG stack that makes your documents searchable in minutes**
-
-[Quick Start](#-quick-start) • [Features](#-features) • [Documentation](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki) • [API Reference](#-api-reference) • [Examples](examples/)
+[Quick Start](#-quick-start) • [Features](#-features) • [Documentation](docs/wiki/README.md) • [API Reference](#-api-reference) • [Examples](examples/)
 
 </div>
 
 ---
 
-## 🎯 Why Flamehaven?
+## 🎯 Why Flamehaven Filesearch?
 
 <table>
 <tr>
