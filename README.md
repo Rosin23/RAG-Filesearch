@@ -11,7 +11,7 @@
 
 **The lightweight RAG stack that makes your documents searchable in minutes**
 
-[Quick Start](#-quick-start) • [Features](#-features) • [Documentation](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki) • [API Reference](#-api-reference) • [Examples](examples/)
+[Quick Start](#-quick-start) • [Features](#-features) • [Documentation](docs/wiki/README.md) • [API Reference](#-api-reference) • [Examples](examples/)
 
 </div>
 
@@ -127,7 +127,7 @@ curl "http://localhost:8000/search?q=vacation+policy"
 **⚠️ Troubleshooting:**
 - `ModuleNotFoundError`: Run `pip install -U pip` first
 - API errors: Check your key has no spaces
-- [More solutions →](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Troubleshooting)
+- [More solutions →](docs/wiki/Troubleshooting.md)
 
 ---
 
@@ -184,7 +184,7 @@ MAX_SOURCES=3
 WORKERS=4                     # Production deployment
 ```
 
-→ [Complete configuration reference](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Configuration)
+→ [Complete configuration reference](docs/wiki/Configuration.md)
 
 ---
 
@@ -241,7 +241,7 @@ services:
     restart: unless-stopped
 ```
 
-→ [Production deployment guide](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Docker-Deployment)
+→ [Production deployment guide](docs/wiki/Production_Deployment.md)
 
 ---
 
@@ -372,7 +372,7 @@ fs.upload_file(path, store="default")
 fs.search(query, store="default", max_sources=5)
 ```
 
-→ [Complete API documentation](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/API-Reference)
+→ [Complete API documentation](docs/wiki/API_Reference.md)
 
 ---
 
@@ -404,7 +404,7 @@ fs.search(query, store="default", max_sources=5)
 └─────────────────────────────────────┘
 ```
 
-→ [Detailed architecture docs](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Architecture)
+→ [Detailed architecture docs](docs/wiki/Architecture.md)
 
 ---
 
@@ -426,7 +426,7 @@ fs.search(query, store="default", max_sources=5)
 - **Throughput**: ~100 cached searches/sec (vs ~10 non-cached)
 
 **Throughput:** ~100 cached searches/sec • ~10 API searches/sec • ~2MB/s processing
-→ [Detailed benchmarks](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Benchmarks)
+→ [Detailed benchmarks](docs/wiki/Benchmarks.md)
 
 ---
 
@@ -469,7 +469,7 @@ export FLAMEHAVEN_DEBUG=1
 flamehaven-api
 ```
 
-→ [Full troubleshooting guide](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Troubleshooting)
+→ [Full troubleshooting guide](docs/wiki/Troubleshooting.md)
 
 ---
 
@@ -483,7 +483,7 @@ flamehaven-api
 - v1.1.0: Production-ready with caching, rate limiting, Prometheus metrics
 - v1.0.0: Initial release with core file search capabilities
 
-→ [Full changelog](CHANGELOG.md) • [Roadmap & voting](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki/Roadmap)
+→ [Full changelog](CHANGELOG.md) • [Roadmap & voting](#-roadmap)
 
 ---
 
@@ -505,7 +505,7 @@ We welcome contributions!
 ## 📚 Resources
 
 ### Documentation
-- **[Wiki](https://github.com/flamehaven01/Flamehaven-Filesearch/wiki)** - Guides, recipes, best practices
+- **[Documentation hub](docs/wiki/README.md)** - Guides, recipes, best practices
 - **[API Docs](http://localhost:8000/docs)** - Interactive Swagger UI
 - **[Examples](examples/)** - Code samples & use cases
 
