@@ -62,8 +62,20 @@ def _get_admin_context(request: Request) -> str:
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
-    """Admin dashboard main page"""
-    user_id = _get_admin_context(request)
+    """Admin dashboard main page (public endpoint for demo)"""
+    # Allow public access for demo/monitoring purposes
+    # In production, consider protecting with authentication
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header:
+        # If auth provided, validate it
+        try:
+            user_id = _get_admin_context(request)
+        except HTTPException:
+            # Fallback to guest if auth fails
+            user_id = "guest"
+    else:
+        # No auth provided - use guest user
+        user_id = "guest"
 
     key_manager = get_key_manager()
     keys = key_manager.list_keys(user_id)
