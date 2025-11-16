@@ -15,11 +15,6 @@ from flamehaven_filesearch.api import app
 class TestPathTraversalProtection:
     """Test protection against path traversal attacks"""
 
-    @pytest.fixture
-    def client(self):
-        """Create test client"""
-        return TestClient(app)
-
     def test_path_traversal_single_upload(self, client, tmp_path):
         """Test path traversal protection in single file upload"""
         # Attack vectors that should be blocked
@@ -139,10 +134,6 @@ class TestPathTraversalProtection:
 class TestInputValidation:
     """Test input validation and sanitization"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_file_size_limits(self, client):
         """Test file size validation"""
         # Create a large file (simulate exceeding limit)
@@ -236,10 +227,6 @@ class TestAPIKeyHandling:
 class TestAuthenticationAndAuthorization:
     """Test authentication and authorization mechanisms"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_health_endpoint_public(self, client):
         """Test that health endpoint is publicly accessible"""
         response = client.get("/health")
@@ -258,10 +245,6 @@ class TestAuthenticationAndAuthorization:
 
 class TestErrorHandling:
     """Test error handling and information disclosure"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     def test_404_error_handling(self, client):
         """Test 404 error does not leak information"""
@@ -295,10 +278,6 @@ class TestErrorHandling:
 class TestSecurityHeaders:
     """Test security-related HTTP headers"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_security_headers_present(self, client):
         """Test that appropriate security headers are set"""
         response = client.get("/health")
@@ -310,10 +289,6 @@ class TestSecurityHeaders:
 
 class TestRateLimiting:
     """Test rate limiting (to be implemented in Phase 3)"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.skip(reason="Rate limiting not yet implemented - Phase 3")
     def test_upload_rate_limiting(self, client):
@@ -348,10 +323,6 @@ class TestRateLimiting:
 
 class TestCORSConfiguration:
     """Test CORS configuration"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     def test_cors_headers(self, client):
         """Test CORS headers are properly configured"""

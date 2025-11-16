@@ -14,10 +14,6 @@ from flamehaven_filesearch.config import Config
 class TestFileUploadEdgeCases:
     """Test edge cases in file upload functionality"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_zero_byte_file(self, client):
         """Test uploading zero-byte file"""
         response = client.post(
@@ -133,10 +129,6 @@ class TestFileUploadEdgeCases:
 
 class TestSearchEdgeCases:
     """Test edge cases in search functionality"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     def test_empty_search_query(self, client):
         """Test search with empty query"""
@@ -289,10 +281,6 @@ class TestConfigurationEdgeCases:
 class TestConcurrencyEdgeCases:
     """Test concurrent access and race conditions"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_concurrent_uploads(self, client):
         """Test multiple simultaneous uploads"""
         import concurrent.futures
@@ -341,10 +329,6 @@ class TestConcurrencyEdgeCases:
 class TestMemoryEdgeCases:
     """Test memory-related edge cases"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     @pytest.mark.slow
     def test_many_small_files_upload(self, client):
         """Test uploading many small files"""
@@ -375,10 +359,6 @@ class TestMemoryEdgeCases:
 
 class TestErrorRecoveryEdgeCases:
     """Test error recovery and resilience"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     def test_malformed_multipart_request(self, client):
         """Test handling of malformed multipart request"""

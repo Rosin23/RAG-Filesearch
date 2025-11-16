@@ -7,39 +7,10 @@ Tests:
 - Admin routes for key management
 """
 
-import tempfile
-from pathlib import Path
-
 import pytest
-from fastapi.testclient import TestClient
 
-from flamehaven_filesearch.api import app
-from flamehaven_filesearch.auth import get_key_manager
-
-
-@pytest.fixture
-def temp_db():
-    """Create temporary database for testing"""
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-        db_path = f.name
-    yield db_path
-    try:
-        Path(db_path).unlink()
-    except FileNotFoundError:
-        pass
-
-
-@pytest.fixture
-def key_manager(temp_db):
-    """Create API key manager with temp database"""
-    manager = get_key_manager(temp_db)
-    return manager
-
-
-@pytest.fixture
-def client():
-    """FastAPI test client"""
-    return TestClient(app)
+# Note: All fixtures (temp_db, key_manager, client, test_api_key, etc.)
+# are imported from conftest.py automatically by pytest
 
 
 @pytest.fixture

@@ -39,7 +39,8 @@ class AuthenticatedTestClient(TestClient):
 
     def request(self, method, url, **kwargs):
         """Override request to add authentication header"""
-        if "headers" not in kwargs:
+        # Handle None or missing headers
+        if "headers" not in kwargs or kwargs["headers"] is None:
             kwargs["headers"] = {}
 
         # Add API key for protected endpoints

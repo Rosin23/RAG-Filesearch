@@ -13,11 +13,6 @@ from flamehaven_filesearch.api import app
 class TestAPIIntegration:
     """Integration tests for complete API workflows"""
 
-    @pytest.fixture
-    def client(self):
-        """Create test client"""
-        return TestClient(app)
-
     def test_health_check_integration(self, client):
         """Test health check endpoint returns all expected fields"""
         response = client.get("/health")
@@ -346,10 +341,6 @@ class TestAPIIntegration:
 
 class TestAPIPerformance:
     """Performance tests for API endpoints"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_health_check_performance(self, client):

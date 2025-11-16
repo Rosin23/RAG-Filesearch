@@ -15,10 +15,6 @@ from flamehaven_filesearch.api import app
 class TestResponseTimes:
     """Test API endpoint response times"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     def test_health_endpoint_response_time(self, client):
         """Test health endpoint responds quickly"""
         start = time.time()
@@ -72,10 +68,6 @@ class TestResponseTimes:
 
 class TestThroughput:
     """Test API throughput and scalability"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_sequential_upload_throughput(self, client):
@@ -151,10 +143,6 @@ class TestThroughput:
 class TestMemoryUsage:
     """Test memory usage characteristics"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     @pytest.mark.slow
     def test_large_file_upload_memory(self, client):
         """Test memory handling for large file uploads"""
@@ -206,10 +194,6 @@ class TestMemoryUsage:
 
 class TestScalability:
     """Test scalability characteristics"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_increasing_load_performance(self, client):
@@ -267,10 +251,6 @@ class TestScalability:
 class TestCacheEffectiveness:
     """Test caching effectiveness (when implemented)"""
 
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
-
     @pytest.mark.skip(reason="Caching not yet implemented - Phase 4")
     def test_repeated_search_cache_hit(self, client):
         """Test that repeated searches benefit from caching"""
@@ -297,10 +277,6 @@ class TestCacheEffectiveness:
 
 class TestResourceLimits:
     """Test behavior at resource limits"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_max_file_size_limit(self, client):
@@ -329,10 +305,6 @@ class TestResourceLimits:
 
 class TestLatencyPercentiles:
     """Test latency distribution and percentiles"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_health_check_latency_percentiles(self, client):
@@ -363,10 +335,6 @@ class TestLatencyPercentiles:
 
 class TestErrorRateUnderLoad:
     """Test error rates under various load conditions"""
-
-    @pytest.fixture
-    def client(self):
-        return TestClient(app)
 
     @pytest.mark.slow
     def test_sustained_load_error_rate(self, client):

@@ -72,9 +72,8 @@ class UsageStatsResponse(BaseModel):
 
 @router.post("/keys", response_model=CreateAPIKeyResponse)
 async def create_api_key(
-    request: Request,
     key_data: CreateAPIKeyRequest,
-    current_user: str = Depends(lambda r: _get_admin_user(r)),
+    current_user: str = Depends(_get_admin_user),
 ):
     """
     Create a new API key
@@ -118,8 +117,7 @@ async def create_api_key(
 
 @router.get("/keys", response_model=ListAPIKeysResponse)
 async def list_api_keys(
-    request: Request,
-    current_user: str = Depends(lambda r: _get_admin_user(r)),
+    current_user: str = Depends(_get_admin_user),
 ):
     """
     List all API keys for current user
@@ -143,8 +141,7 @@ async def list_api_keys(
 @router.delete("/keys/{key_id}")
 async def revoke_api_key(
     key_id: str,
-    request: Request,
-    current_user: str = Depends(lambda r: _get_admin_user(r)),
+    current_user: str = Depends(_get_admin_user),
 ):
     """
     Revoke (disable) an API key
@@ -185,8 +182,7 @@ async def revoke_api_key(
 @router.get("/usage", response_model=UsageStatsResponse)
 async def get_usage_stats(
     days: int = 30,
-    request: Request = None,
-    current_user: str = Depends(lambda r: _get_admin_user(r)),
+    current_user: str = Depends(_get_admin_user),
 ):
     """
     Get API usage statistics for current user
