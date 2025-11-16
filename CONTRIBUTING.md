@@ -1,130 +1,208 @@
 # Contributing to FLAMEHAVEN FileSearch
 
-Thank you for considering contributing to FLAMEHAVEN FileSearch!
+Thank you for considering contributing to FLAMEHAVEN FileSearch! This project is built and improved by the community.
 
-## Getting Started
+## Ways to Contribute
 
-### Development Setup
+### 1. Bug Reports
 
-1. Fork the repository
-2. Clone your fork:
+Found a bug? Please report it on [GitHub Issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues).
+
+**Effective bug report template:**
+
+```markdown
+## Bug Description
+[Clear and concise description]
+
+## Steps to Reproduce
+1. [Step 1]
+2. [Step 2]
+3. [Expected vs Actual result]
+
+## Environment
+- OS: [Windows/Mac/Linux]
+- Python: [version]
+- flamehaven-filesearch: [version]
+
+## Error Logs
+[Output/Stack trace]
+
+## Additional Context
+[Screenshots, configuration, etc]
+```
+
+### 2. Feature Requests
+
+Want to suggest a new feature?
+
+**Before submitting:**
+- Check [Roadmap](README.md#-roadmap) for planned features
+- Search [Discussions](https://github.com/flamehaven01/Flamehaven-Filesearch/discussions) for similar requests
+
+### 3. Code Contributions
+
+#### Good First Issues
+
+Perfect for newcomers - look for issues labeled:
+- **good first issue** - Recommended for first-time contributors
+- **documentation** - Documentation improvements
+- **bug** - Small bugs with clear requirements
+- **refactor** - Small refactoring tasks
+
+#### Step-by-Step Guide
+
+1. **Fork the Repository**
    ```bash
    git clone https://github.com/YOUR-USERNAME/Flamehaven-Filesearch.git
    cd Flamehaven-Filesearch
    ```
 
-3. Install development dependencies:
-   ```bash
-   pip install -e ".[dev,api]"
-   ```
-
-4. Set up environment:
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your GEMINI_API_KEY
-   ```
-
-## Development Workflow
-
-### Code Style
-
-We use:
-- **black** for code formatting
-- **isort** for import sorting
-- **flake8** for linting
-- **mypy** for type checking
-
-Run formatters:
-```bash
-black flamehaven_filesearch/ tests/ examples/
-isort flamehaven_filesearch/ tests/ examples/
-```
-
-Run linters:
-```bash
-flake8 flamehaven_filesearch/ tests/ examples/
-mypy flamehaven_filesearch/
-```
-
-### Testing
-
-Run tests:
-```bash
-# All tests
-pytest
-
-# Unit tests only (no integration)
-pytest -m "not integration"
-
-# With coverage
-pytest --cov=flamehaven_filesearch --cov-report=html
-
-# Specific test file
-pytest tests/test_core.py -v
-```
-
-### Making Changes
-
-1. Create a new branch:
+2. **Create Feature Branch**
    ```bash
    git checkout -b feature/your-feature-name
+   git checkout -b fix/your-bug-fix
    ```
 
-2. Make your changes
-
-3. Add tests for new functionality
-
-4. Run tests and linters:
+3. **Set Up Development Environment**
    ```bash
-   pytest
-   black --check .
-   flake8 .
+   pip install -e ".[dev]"
    ```
 
-5. Commit your changes:
+4. **Implement & Test**
    ```bash
-   git add .
-   git commit -m "Add: your feature description"
+   pytest tests/ -v
+   black flamehaven_filesearch/
+   isort flamehaven_filesearch/
+   flake8 flamehaven_filesearch/
    ```
 
-6. Push to your fork:
+5. **Commit Changes**
    ```bash
+   git commit -m "feat: description"
    git push origin feature/your-feature-name
    ```
 
-7. Open a Pull Request
+6. **Create Pull Request**
+   - Open PR on GitHub
+   - Wait for CI/CD tests
+   - Address review feedback
+   - Merge!
 
-## Commit Message Format
+---
 
-Use conventional commits format:
+## Commit Message Convention
 
-- `Add: new feature`
-- `Fix: bug fix`
-- `Update: improvement to existing feature`
-- `Refactor: code refactoring`
-- `Docs: documentation changes`
-- `Test: test additions or changes`
-- `CI: CI/CD changes`
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-## Pull Request Process
+```
+<type>(<scope>): <subject>
 
-1. Update README.md if needed
-2. Update tests
-3. Ensure CI passes
-4. Request review from maintainers
-5. Address feedback
+<body>
+```
 
-## Code of Conduct
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
-- Be respectful and inclusive
-- Welcome newcomers
-- Accept constructive criticism
-- Focus on what's best for the project
+**Scopes:** `auth`, `api`, `cache`, `docs`, `test`
 
-## Questions?
+**Examples:**
+```bash
+feat(auth): add API key rotation
+fix(cache): fix Redis connection timeout
+docs: add Kubernetes deployment guide
+```
 
-Open an issue or discussion on GitHub!
+---
+
+## Testing Requirements
+
+All new features must include tests:
+
+```python
+# tests/test_my_feature.py
+import pytest
+
+class TestMyFeature:
+    def test_basic_functionality(self):
+        result = my_function("input")
+        assert result == "expected"
+
+    def test_edge_case(self):
+        with pytest.raises(ValueError):
+            my_function(None)
+```
+
+**Requirements:**
+- Minimum 90% code coverage
+- All existing tests must pass
+- New features should aim for 100% coverage
+
+---
+
+## Code Review Criteria
+
+Your PR will be evaluated on:
+
+### Code Quality
+- PEP 8 compliant
+- Type hints included
+- Comments for complex logic
+- No dead code
+- DRY principle followed
+
+### Testing
+- Tests for new features included
+- All existing tests pass
+- 90%+ code coverage
+- Edge cases tested
+
+### Documentation
+- Docstrings for functions/classes
+- README updated (if needed)
+- CHANGELOG updated
+- Major changes explained
+
+### Compatibility
+- Python 3.8+ support
+- Works on Windows, Mac, Linux
+- Docker compatible
+
+---
+
+## Development Setup
+
+### Quick Start
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR-USERNAME/Flamehaven-Filesearch.git
+cd Flamehaven-Filesearch
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Verify with tests
+pytest tests/ -v
+```
+
+---
+
+## Getting Help
+
+- **Questions:** [GitHub Discussions](https://github.com/flamehaven01/Flamehaven-Filesearch/discussions)
+- **Bugs:** [GitHub Issues](https://github.com/flamehaven01/Flamehaven-Filesearch/issues)
+- **Documentation:** [README.md](README.md)
+- **API Docs:** http://localhost:8000/docs (when running)
+
+---
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree your work will be licensed under [MIT License](LICENSE).
+
+---
+
+**Thank you for contributing! 🙏**
