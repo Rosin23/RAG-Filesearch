@@ -66,7 +66,8 @@ def test_setup_json_logging_accepts_level_kwarg(reset_logging):
     root_logger = logging.getLogger()
     assert root_logger.level == logging.DEBUG
     assert any(
-        isinstance(handler.formatter, CustomJsonFormatter) for handler in root_logger.handlers
+        isinstance(handler.formatter, CustomJsonFormatter)
+        for handler in root_logger.handlers
     )
 
 
@@ -86,7 +87,9 @@ def test_request_logging_context_injects_request_id(caplog):
         with RequestLoggingContext("request-42"):
             logger.info("processing request")
 
-    assert any(getattr(record, "request_id", None) == "request-42" for record in caplog.records)
+    assert any(
+        getattr(record, "request_id", None) == "request-42" for record in caplog.records
+    )
 
 
 def test_get_logger_with_request_id_returns_adapter():

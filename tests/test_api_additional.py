@@ -230,4 +230,6 @@ async def test_request_validation_exception_handler_customizes_file_errors():
 
     response = await request_validation_exception_handler(request, validation)
     assert response.status_code == 400
-    assert _parse_json(response)["detail"] == "Invalid filename: Filename cannot be empty"
+    assert (
+        _parse_json(response)["detail"] == "Invalid filename: Filename cannot be empty"
+    )

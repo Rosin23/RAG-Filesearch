@@ -186,7 +186,9 @@ class FlamehavenFileSearch:
 
         return self._local_upload(file_path, store_name, size_mb)
 
-    def upload_files(self, file_paths: List[str], store_name: str = "default") -> Dict[str, Any]:
+    def upload_files(
+        self, file_paths: List[str], store_name: str = "default"
+    ) -> Dict[str, Any]:
         """
         Upload multiple files
 
@@ -211,7 +213,9 @@ class FlamehavenFileSearch:
             "results": results,
         }
 
-    def _local_upload(self, file_path: str, store_name: str, size_mb: float) -> Dict[str, Any]:
+    def _local_upload(
+        self, file_path: str, store_name: str, size_mb: float
+    ) -> Dict[str, Any]:
         """Store file metadata/content locally when google-genai is unavailable."""
         try:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as source:
@@ -321,12 +325,16 @@ class FlamehavenFileSearch:
         """
         model = model or self.config.default_model
         max_tokens = max_tokens or self.config.max_output_tokens
-        temperature = temperature if temperature is not None else self.config.temperature
+        temperature = (
+            temperature if temperature is not None else self.config.temperature
+        )
 
         if store_name not in self.stores:
             return {
                 "status": "error",
-                "message": (f"Store '{store_name}' not found. Create it first or upload files."),
+                "message": (
+                    f"Store '{store_name}' not found. Create it first or upload files."
+                ),
             }
 
         if not self._use_native_client:

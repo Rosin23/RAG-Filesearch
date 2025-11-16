@@ -7,8 +7,6 @@ Tests:
 - Admin routes for key management
 """
 
-import json
-import os
 import tempfile
 from pathlib import Path
 
@@ -185,7 +183,10 @@ class TestProtectedEndpoints:
         )
 
         assert response.status_code == 401
-        assert "Authorization" in response.text.lower() or "missing" in response.text.lower()
+        assert (
+            "Authorization" in response.text.lower()
+            or "missing" in response.text.lower()
+        )
 
     def test_search_requires_auth(self, client):
         """Test that search endpoint requires API key"""

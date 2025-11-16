@@ -232,7 +232,9 @@ class TestScalability:
         if len(response_times) >= 2:
             degradation = response_times[-1] / response_times[0]
             print(f"Performance degradation factor: {degradation:.2f}x")
-            assert degradation < 3.0, f"Performance degraded {degradation:.2f}x under load"
+            assert (
+                degradation < 3.0
+            ), f"Performance degraded {degradation:.2f}x under load"
 
     @pytest.mark.slow
     def test_file_size_scaling(self, client):
@@ -253,7 +255,10 @@ class TestScalability:
             if response.status_code == 200:
                 times.append(elapsed)
                 throughput = size / elapsed / 1024  # KB/s
-                print("\nSize " f"{size / 1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)")
+                print(
+                    "\nSize "
+                    f"{size / 1024:.1f}KB: {elapsed:.3f}s ({throughput:.1f} KB/s)"
+                )
 
         # Should complete all uploads
         assert len(times) > 0
@@ -307,7 +312,9 @@ class TestResourceLimits:
         content_under = b"x" * (max_size - 1024)
         response = client.post(
             "/api/upload/single",
-            files={"file": ("under_limit.bin", content_under, "application/octet-stream")},
+            files={
+                "file": ("under_limit.bin", content_under, "application/octet-stream")
+            },
         )
         # May succeed or fail depending on config
         assert response.status_code in [200, 413]

@@ -7,8 +7,6 @@ Provides:
 - Mock Google Gemini API
 """
 
-import json
-import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -57,8 +55,7 @@ def key_manager(temp_db, test_api_key, monkeypatch):
 
     # Create test API key by directly inserting (bypass hashing for testing)
     import sqlite3
-    import uuid
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     conn = sqlite3.connect(temp_db)
     conn.row_factory = sqlite3.Row
@@ -107,7 +104,8 @@ def key_manager(temp_db, test_api_key, monkeypatch):
     cursor.execute(
         """
         INSERT OR IGNORE INTO api_keys
-        (id, name, key_hash, user_id, created_at, is_active, rate_limit_per_minute, permissions)
+        (id, name, key_hash, user_id, created_at, is_active,
+         rate_limit_per_minute, permissions)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """,
         (
@@ -220,7 +218,6 @@ def mock_online_api(monkeypatch):
 def cleanup_metrics():
     """Reset metrics before each test to avoid cross-test contamination"""
     # Clear in-memory metrics state
-    from flamehaven_filesearch import metrics
 
     # Reset metrics registry if needed
     yield

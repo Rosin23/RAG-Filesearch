@@ -8,15 +8,11 @@ Tests all new functionality added in v1.2.0:
 - Redis Cache Backend
 """
 
-import json
 import pytest
 from fastapi.testclient import TestClient
 
 from flamehaven_filesearch.api import app
-from flamehaven_filesearch.auth import APIKeyManager
-from flamehaven_filesearch.batch_routes import BatchSearchQuery, BatchSearchRequest
 from flamehaven_filesearch.cache_redis import RedisCache
-
 
 # ============================================================================
 # API AUTHENTICATION TESTS
@@ -311,12 +307,16 @@ class TestAPIVersion:
         data = response.json()
 
         # Should have version info
-        assert "version" in data or "api_version" in data or "service" in data.get("info", {})
+        assert (
+            "version" in data
+            or "api_version" in data
+            or "service" in data.get("info", {})
+        )
 
     def test_api_version_in_responses(self, authenticated_client):
         """Test that API version appears in responses"""
         response = authenticated_client.get("/api/stores")
-        data = response.json()
+        response.json()
 
         # Version should be in response metadata if available
         assert response.status_code in [200, 404, 400, 422]

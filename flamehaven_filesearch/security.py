@@ -70,7 +70,9 @@ async def extract_api_key(request: Request) -> str:
     return parts[1]
 
 
-async def get_current_api_key(request: Request, key: str = Depends(extract_api_key)) -> APIKeyInfo:
+async def get_current_api_key(
+    request: Request, key: str = Depends(extract_api_key)
+) -> APIKeyInfo:
     """
     Validate API key and return key information
 
@@ -97,7 +99,9 @@ async def get_current_api_key(request: Request, key: str = Depends(extract_api_k
         rate_limit=api_key_info.rate_limit_per_minute,
     )
 
-    logger.debug("API key validated: %s (user=%s)", api_key_info.id, api_key_info.user_id)
+    logger.debug(
+        "API key validated: %s (user=%s)", api_key_info.id, api_key_info.user_id
+    )
 
     return api_key_info
 

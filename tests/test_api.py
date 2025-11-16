@@ -12,8 +12,6 @@ for _pkg in ("fastapi", "httpx", "python_multipart"):
     if importlib.util.find_spec(_pkg) is None:
         pytest.skip(f"{_pkg} not installed", allow_module_level=True)
 
-from flamehaven_filesearch.api import app  # noqa: E402
-
 
 @pytest.fixture
 def mock_api_key(monkeypatch):
@@ -120,7 +118,9 @@ class TestSearchEndpoints:
 
     def test_search_post_with_query(self, client, mock_api_key):
         """Test search POST with query"""
-        response = client.post("/search", json={"query": "test query", "store_name": "default"})
+        response = client.post(
+            "/search", json={"query": "test query", "store_name": "default"}
+        )
         # May fail without valid API key or store
         assert response.status_code in [200, 400, 500, 503]
 
@@ -185,7 +185,9 @@ class TestAPIIntegration:
     def test_full_workflow(self, authenticated_client):
         """Test complete upload and search workflow"""
         # Create store
-        response = authenticated_client.post("/stores", json={"name": "integration-test"})
+        response = authenticated_client.post(
+            "/stores", json={"name": "integration-test"}
+        )
         assert response.status_code == 200
 
         # Upload file

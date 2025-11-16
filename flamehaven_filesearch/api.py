@@ -22,7 +22,16 @@ from datetime import datetime
 from typing import List, Optional
 
 import psutil
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.exception_handlers import (
     request_validation_exception_handler as fastapi_validation_handler,
 )
@@ -33,9 +42,14 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+# Import routers
+from .admin_routes import router as admin_router
+from .auth import APIKeyInfo
+from .batch_routes import router as batch_router
 from .cache import get_all_cache_stats
 from .config import Config
 from .core import FlamehavenFileSearch
+from .dashboard import router as dashboard_router
 from .exceptions import (
     FileSearchException,
     ServiceUnavailableError,
@@ -50,9 +64,8 @@ from .middlewares import (
     SecurityHeadersMiddleware,
     get_request_id,
 )
+from .security import get_current_api_key
 from .validators import validate_search_request, validate_upload_file
-from .security import get_current_api_key, get_request_context, optional_api_key
-from .auth import APIKeyInfo, get_key_manager
 
 # Configure structured JSON logging for production
 # Use ENVIRONMENT=development for human-readable logs
@@ -81,7 +94,9 @@ limiter = Limiter(key_func=rate_limit_key)
 # Initialize app
 app = FastAPI(
     title="FLAMEHAVEN FileSearch API",
-    description=("Open source semantic document search powered by Google Gemini " "- v1.2.0"),
+    description=(
+        "Open source semantic document search powered by Google Gemini " "- v1.2.0"
+    ),
     version="1.2.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -109,11 +124,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(CORSHeadersMiddleware)
 
-# Include admin routes (API key management)
-from .admin_routes import router as admin_router
-from .dashboard import router as dashboard_router
-from .batch_routes import router as batch_router
-
+# Include routers (API key management, batch search, dashboard)
 app.include_router(admin_router)
 app.include_router(dashboard_router)
 app.include_router(batch_router)
@@ -131,8 +142,12 @@ class SearchRequest(BaseModel):
     query: str = Field(..., description="Search query", min_length=0)
     store_name: str = Field(default="default", description="Store name to search in")
     model: Optional[str] = Field(None, description="Model to use for generation")
-    max_tokens: Optional[int] = Field(None, description="Maximum output tokens", gt=0, le=8192)
-    temperature: Optional[float] = Field(None, description="Model temperature", ge=0.0, le=2.0)
+    max_tokens: Optional[int] = Field(
+        None, description="Maximum output tokens", gt=0, le=8192
+    )
+    temperature: Optional[float] = Field(
+        None, description="Model temperature", ge=0.0, le=2.0
+    )
 
 
 class SearchResponse(BaseModel):
@@ -174,7 +189,9 @@ class MultipleUploadResponse(BaseModel):
 class StoreRequest(BaseModel):
     """Store creation request"""
 
-    name: str = Field(default="default", description="Store name", min_length=1, max_length=100)
+    name: str = Field(
+        default="default", description="Store name", min_length=1, max_length=100
+    )
 
 
 class HealthResponse(BaseModel):
@@ -414,7 +431,9 @@ async def upload_single_file(
         MetricsCollector.record_file_upload(
             store=store, size_bytes=0, duration=duration, success=False
         )
-        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/upload/single")
+        MetricsCollector.record_error(
+            error_type="UnexpectedError", endpoint="/api/upload/single"
+        )
         logger.error(f"[{request_id}] Upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
@@ -502,8 +521,12 @@ async def upload_multiple_files(
 
             except FileSearchException as e:
                 failed += 1
-                results.append({"filename": file.filename, "status": "failed", "error": str(e)})
-                logger.warning(f"[{request_id}] File validation failed for {file.filename}: {e}")
+                results.append(
+                    {"filename": file.filename, "status": "failed", "error": str(e)}
+                )
+                logger.warning(
+                    f"[{request_id}] File validation failed for {file.filename}: {e}"
+                )
 
         logger.info(f"[{request_id}] Saved {len(file_paths)} files to temp")
 
@@ -608,7 +631,9 @@ async def search(
                 success=True,
             )
 
-            logger.info(f"[{request_id}] Cache HIT for query: {validated_query[:50]}...")
+            logger.info(
+                f"[{request_id}] Cache HIT for query: {validated_query[:50]}..."
+            )
             return cached_result
 
         # Cache miss - perform search
@@ -634,12 +659,18 @@ async def search(
                 results_count=0,
                 success=False,
             )
-            MetricsCollector.record_error(error_type="SearchError", endpoint="/api/search")
-            status_code = 404 if "not found" in result.get("message", "").lower() else 400
+            MetricsCollector.record_error(
+                error_type="SearchError", endpoint="/api/search"
+            )
+            status_code = (
+                404 if "not found" in result.get("message", "").lower() else 400
+            )
             raise HTTPException(status_code=status_code, detail=result["message"])
 
         # Cache the successful result
-        search_cache.set(validated_query, search_request.store_name, result, **cache_key_params)
+        search_cache.set(
+            validated_query, search_request.store_name, result, **cache_key_params
+        )
 
         # Record metrics
         duration = time.time() - start_time
@@ -665,7 +696,9 @@ async def search(
             results_count=0,
             success=False,
         )
-        MetricsCollector.record_error(error_type=e.__class__.__name__, endpoint="/api/search")
+        MetricsCollector.record_error(
+            error_type=e.__class__.__name__, endpoint="/api/search"
+        )
         raise
     except HTTPException:
         raise
@@ -677,7 +710,9 @@ async def search(
             results_count=0,
             success=False,
         )
-        MetricsCollector.record_error(error_type="UnexpectedError", endpoint="/api/search")
+        MetricsCollector.record_error(
+            error_type="UnexpectedError", endpoint="/api/search"
+        )
         logger.error(f"[{request_id}] Search failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -769,7 +804,9 @@ async def create_store_legacy(request: Request, store_request: StoreRequest):
 
 @app.get("/api/stores", tags=["Stores"])
 @limiter.limit("100/minute")
-async def list_stores(request: Request, api_key: APIKeyInfo = Depends(get_current_api_key)):
+async def list_stores(
+    request: Request, api_key: APIKeyInfo = Depends(get_current_api_key)
+):
     """
     List all created stores (Rate limited: 100/min)
 
@@ -971,12 +1008,16 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 
 @app.exception_handler(RequestValidationError)
-async def request_validation_exception_handler(request: Request, exc: RequestValidationError):
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+):
     """Convert FastAPI validation errors into standardized responses."""
     request_id = get_request_id(request)
 
     file_errors = [err for err in exc.errors() if "file" in err.get("loc", [])]
-    empty_filename = any("Expected UploadFile" in err.get("msg", "") for err in file_errors)
+    empty_filename = any(
+        "Expected UploadFile" in err.get("msg", "") for err in file_errors
+    )
 
     if not empty_filename:
         return await fastapi_validation_handler(request, exc)
@@ -1030,7 +1071,10 @@ def main():
         print("      - Comprehensive input validation")
         print("  [*] Performance:")
         print("      - LRU caching with TTL (1000 items, 1-hour TTL)")
-        print("      - Structured JSON logging " "(set ENVIRONMENT=development for readable logs)")
+        print(
+            "      - Structured JSON logging "
+            "(set ENVIRONMENT=development for readable logs)"
+        )
         print("  [*] Monitoring:")
         print("      - Prometheus metrics at /prometheus")
         print("      - System metrics (CPU, memory, disk)")

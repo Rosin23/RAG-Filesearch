@@ -120,12 +120,15 @@ class SearchResultCache(AbstractSearchCache):
 
             if result is not None:
                 self.hits += 1
-                logger.debug(f"Cache HIT: {key[:16]}... (hits={self.hits}, misses={self.misses})")
+                logger.debug(
+                    f"Cache HIT: {key[:16]}... (hits={self.hits}, misses={self.misses})"
+                )
                 return result
             else:
                 self.misses += 1
                 logger.debug(
-                    f"Cache MISS: {key[:16]}... " f"(hits={self.hits}, misses={self.misses})"
+                    f"Cache MISS: {key[:16]}... "
+                    f"(hits={self.hits}, misses={self.misses})"
                 )
                 return None
 
@@ -147,7 +150,9 @@ class SearchResultCache(AbstractSearchCache):
 
         try:
             self.cache[key] = result
-            logger.debug(f"Cache SET: {key[:16]}... (size={len(self.cache)}/{self.maxsize})")
+            logger.debug(
+                f"Cache SET: {key[:16]}... (size={len(self.cache)}/{self.maxsize})"
+            )
 
         except Exception as e:
             logger.warning(f"Cache set error: {e}")

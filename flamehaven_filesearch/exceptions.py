@@ -55,7 +55,8 @@ class FileSizeExceededError(FileUploadError):
             details["filename"] = filename
 
         message = (
-            f"File size ({details['file_size_mb']}MB) exceeds maximum allowed " f"({max_size}MB)"
+            f"File size ({details['file_size_mb']}MB) exceeds maximum allowed "
+            f"({max_size}MB)"
         )
         super().__init__(message, error_code="FILE_SIZE_EXCEEDED", details=details)
 
@@ -159,7 +160,9 @@ class ConfigurationError(FileSearchException):
     """Configuration related errors"""
 
     def __init__(self, message: str, **kwargs):
-        super().__init__(message, status_code=500, error_code="CONFIGURATION_ERROR", **kwargs)
+        super().__init__(
+            message, status_code=500, error_code="CONFIGURATION_ERROR", **kwargs
+        )
 
 
 class MissingAPIKeyError(ConfigurationError):
@@ -288,7 +291,9 @@ class ResourceNotFoundError(FileSearchException):
 class ResourceConflictError(FileSearchException):
     """Resource already exists or conflict"""
 
-    def __init__(self, resource_type: str, resource_id: str, reason: Optional[str] = None):
+    def __init__(
+        self, resource_type: str, resource_id: str, reason: Optional[str] = None
+    ):
         details = {"resource_type": resource_type, "resource_id": resource_id}
         if reason:
             details["reason"] = reason

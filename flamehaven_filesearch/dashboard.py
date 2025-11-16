@@ -9,15 +9,12 @@ Provides web UI for:
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 
 from .auth import get_key_manager
-from .security import RequestContext
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +86,9 @@ async def dashboard(request: Request):
         last_used = "Never"
         if key.last_used:
             try:
-                last_used_dt = datetime.fromisoformat(key.last_used.replace("Z", "+00:00"))
+                last_used_dt = datetime.fromisoformat(
+                    key.last_used.replace("Z", "+00:00")
+                )
                 diff = now - last_used_dt
                 if diff.days == 0:
                     last_used = f"{diff.seconds // 3600}h ago"
@@ -122,15 +121,19 @@ async def dashboard(request: Request):
         for k in keys_data:
             key_id = k["id"]
             button_onclick = f"revokeKey('{key_id}')"
+            code_style = "background: #f5f5f5; padding: 2px 6px; border-radius: 3px;"
             row = (
                 "<tr>"
-                f'<td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">{k["id"]}</code><br><small>{k["name"]}</small></td>'
-                f'<td><span class="badge badge-{k["is_active"].lower()}">{k["is_active"]}</span></td>'
+                f'<td><code style="{code_style}">{k["id"]}</code>'
+                f'<br><small>{k["name"]}</small></td>'
+                f'<td><span class="badge badge-{k["is_active"].lower()}">'
+                f'{k["is_active"]}</span></td>'
                 f'<td>{k["created_at"]}</td>'
                 f'<td>{k["last_used"]}</td>'
                 f'<td>{k["rate_limit"]}/min</td>'
                 f'<td><small>{k["permissions"]}</small></td>'
-                f'<td><button class="btn-danger" onclick="{button_onclick}">Revoke</button></td>'
+                f'<td><button class="btn-danger" onclick="{button_onclick}">'
+                f"Revoke</button></td>"
                 "</tr>"
             )
             rows.append(row)
@@ -315,45 +318,64 @@ async def dashboard(request: Request):
 
             <div class="section">
                 <h2>Request Distribution (Last 7 Days)</h2>
-                {f'''
                 <div style="padding: 20px 0;">
-                    {chr(10).join(f'''
-                    <div class="endpoint-bar">
-                        <div class="endpoint-name">{endpoint}</div>
-                        <div class="bar">
-                            <div class="bar-fill" style="width: {(count / max(by_endpoint.values(), default=1)) * 100}%"></div>
-                        </div>
-                        <div class="endpoint-count">{count}</div>
-                    </div>
-                    ''' for endpoint, count in top_endpoints) if top_endpoints else '<p class="empty">No requests in the last 7 days</p>'}
+                {
+                    chr(10).join(
+                        (
+                            lambda e, c: (
+                                f'<div class="endpoint-bar">'
+                                f'<div class="endpoint-name">{e}</div>'
+                                f'<div class="bar">'
+                                f'<div class="bar-fill" '
+                                f'style="width: '
+                                f'{(c / max(by_endpoint.values(), default=1)) * 100}%">'
+                                f"</div></div>"
+                                f'<div class="endpoint-count">{c}</div>'
+                                f"</div>"
+                            )
+                        )(endpoint, count)
+                        for endpoint, count in top_endpoints
+                    )
+                    if top_endpoints
+                    else '<p class="empty">No request data available</p>'
+                }
                 </div>
-                ''' if top_endpoints else '<p class="empty">No request data available</p>'}
             </div>
 
             <div class="section">
                 <h2>API Reference</h2>
                 <p>Use the following endpoints to manage your API keys:</p>
                 <ul style="margin-left: 20px; margin-top: 10px;">
-                    <li><code>POST /api/admin/keys</code> - Create new API key</li>
-                    <li><code>GET /api/admin/keys</code> - List your API keys</li>
-                    <li><code>DELETE /api/admin/keys/{{key_id}}</code> - Revoke API key</li>
-                    <li><code>GET /api/admin/usage</code> - Get usage statistics</li>
-                    <li><code>POST /api/admin/batch-search</code> - Batch search (v1.2.0)</li>
+                    <li><code>POST /api/admin/keys</code> -
+                        Create new API key</li>
+                    <li><code>GET /api/admin/keys</code> -
+                        List your API keys</li>
+                    <li><code>DELETE /api/admin/keys/{{key_id}}</code> -
+                        Revoke API key</li>
+                    <li><code>GET /api/admin/usage</code> -
+                        Get usage statistics</li>
+                    <li><code>POST /api/admin/batch-search</code> -
+                        Batch search (v1.2.0)</li>
                 </ul>
             </div>
         </div>
 
         <footer>
-            <p>FLAMEHAVEN FileSearch v1.2.0 • Last updated: {datetime.utcnow().isoformat()}Z</p>
+            <p>FLAMEHAVEN FileSearch v1.2.0 •
+               Last updated: {datetime.utcnow().isoformat()}Z</p>
         </footer>
 
         <script>
             function revokeKey(keyId) {{
-                if (confirm('Are you sure you want to revoke this API key? It cannot be undone.')) {{
+                if (confirm(
+                    'Are you sure you want to revoke this API key? '
+                    + 'It cannot be undone.'
+                )) {{
                     fetch(`/api/admin/keys/${{keyId}}`, {{
                         method: 'DELETE',
                         headers: {{
-                            'Authorization': `Bearer ${{localStorage.getItem('admin_token')}}`
+                            'Authorization':
+                                `Bearer ${{localStorage.getItem('admin_token')}}`
                         }}
                     }})
                     .then(r => r.json())
@@ -379,7 +401,7 @@ async def dashboard(request: Request):
 @router.get("/health-check", response_class=HTMLResponse)
 async def health_check_page(request: Request):
     """Simple health check page"""
-    user_id = _get_admin_context(request)
+    _get_admin_context(request)
 
     html = (
         """

@@ -10,13 +10,12 @@ import logging
 import time
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from slowapi import Limiter
 
-from .auth import APIKeyInfo, get_key_manager
+from .auth import APIKeyInfo
 from .core import FlamehavenFileSearch
-from .exceptions import FileSearchException, exception_to_response
+from .exceptions import FileSearchException
 from .metrics import MetricsCollector
 from .middlewares import get_request_id
 from .security import get_current_api_key
@@ -49,7 +48,9 @@ class BatchSearchRequest(BaseModel):
 
     queries: List[BatchSearchQuery] = Field(..., description="List of search queries")
     mode: str = Field(default="sequential", description="sequential or parallel")
-    max_results: int = Field(default=5, ge=1, le=10, description="Max results per query")
+    max_results: int = Field(
+        default=5, ge=1, le=10, description="Max results per query"
+    )
 
 
 class BatchSearchResult(BaseModel):
@@ -128,7 +129,9 @@ async def batch_search(
     try:
         if batch_request.mode == "parallel":
             # Parallel execution
-            results = await _execute_batch_parallel(queries, batch_request.max_results, request_id)
+            results = await _execute_batch_parallel(
+                queries, batch_request.max_results, request_id
+            )
         else:
             # Sequential execution (default)
             results = await _execute_batch_sequential(
@@ -166,7 +169,9 @@ async def batch_search(
 
     except Exception as e:
         logger.error("[%s] Batch search failed: %s", request_id, e)
-        MetricsCollector.record_error(error_type="BatchSearchError", endpoint="/api/batch-search")
+        MetricsCollector.record_error(
+            error_type="BatchSearchError", endpoint="/api/batch-search"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e),

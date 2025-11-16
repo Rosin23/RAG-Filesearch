@@ -288,7 +288,9 @@ class TestAPIIntegration:
                     error_data = response.json()
                     assert "error" in error_data or "status" in error_data
                     assert "message" in error_data or "detail" in error_data
-                    assert "request_id" in error_data or "X-Request-ID" in response.headers
+                    assert (
+                        "request_id" in error_data or "X-Request-ID" in response.headers
+                    )
 
     def test_multiple_upload_workflow(self, client):
         """Test multiple file upload workflow"""

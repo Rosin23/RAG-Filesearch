@@ -350,7 +350,8 @@ class TestMemoryEdgeCases:
         """Test uploading many small files"""
         # Upload 100 small files
         files = [
-            ("files", (f"file{i}.txt", f"content{i}".encode(), "text/plain")) for i in range(100)
+            ("files", (f"file{i}.txt", f"content{i}".encode(), "text/plain"))
+            for i in range(100)
         ]
 
         response = client.post("/api/upload/multiple", files=files)

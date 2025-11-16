@@ -165,7 +165,9 @@ class RedisCache:
                 "max_items": self.max_items,
                 "ttl_seconds": self.ttl_seconds,
                 "memory_used_mb": round(info.get("used_memory", 0) / (1024 * 1024), 2),
-                "memory_peak_mb": round(info.get("used_memory_peak", 0) / (1024 * 1024), 2),
+                "memory_peak_mb": round(
+                    info.get("used_memory_peak", 0) / (1024 * 1024), 2
+                ),
             }
 
         except Exception as e:

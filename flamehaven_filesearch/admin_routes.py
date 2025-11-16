@@ -11,12 +11,10 @@ Endpoints:
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from .auth import APIKeyInfo, get_key_manager
-from .security import get_current_api_key, require_permission, RequestContext
-from fastapi import Depends
+from .auth import get_key_manager
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +30,12 @@ class CreateAPIKeyRequest(BaseModel):
         default=None,
         description="Permissions list. Default: [upload, search, stores]",
     )
-    rate_limit_per_minute: int = Field(default=100, description="Rate limit in requests per minute")
-    expires_in_days: Optional[int] = Field(default=None, description="Days until expiration")
+    rate_limit_per_minute: int = Field(
+        default=100, description="Rate limit in requests per minute"
+    )
+    expires_in_days: Optional[int] = Field(
+        default=None, description="Days until expiration"
+    )
 
 
 class CreateAPIKeyResponse(BaseModel):
@@ -45,7 +47,9 @@ class CreateAPIKeyResponse(BaseModel):
     created_at: str
     permissions: List[str]
     rate_limit_per_minute: int
-    warning: str = "Save your API key in a secure location. " "You won't be able to see it again."
+    warning: str = (
+        "Save your API key in a secure location. " "You won't be able to see it again."
+    )
 
 
 class ListAPIKeysResponse(BaseModel):
@@ -88,7 +92,12 @@ async def create_api_key(
             expires_in_days=key_data.expires_in_days,
         )
 
-        logger.info("API key created: %s (name=%s, user=%s)", key_id, key_data.name, current_user)
+        logger.info(
+            "API key created: %s (name=%s, user=%s)",
+            key_id,
+            key_data.name,
+            current_user,
+        )
 
         return {
             "id": key_id,

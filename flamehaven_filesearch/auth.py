@@ -223,9 +223,16 @@ class APIKeyManager:
                 if not row:
                     return None
 
-                key_id, name, user_id, created_at, last_used, is_active, rate_limit, perms_json = (
-                    row
-                )
+                (
+                    key_id,
+                    name,
+                    user_id,
+                    created_at,
+                    last_used,
+                    is_active,
+                    rate_limit,
+                    perms_json,
+                ) = row
 
                 # Check if key is active
                 if not is_active:
@@ -301,9 +308,16 @@ class APIKeyManager:
 
                 keys = []
                 for row in cursor.fetchall():
-                    key_id, name, user, created_at, last_used, is_active, rate_limit, perms_json = (
-                        row
-                    )
+                    (
+                        key_id,
+                        name,
+                        user,
+                        created_at,
+                        last_used,
+                        is_active,
+                        rate_limit,
+                        perms_json,
+                    ) = row
                     permissions = json.loads(perms_json) if perms_json else []
 
                     keys.append(

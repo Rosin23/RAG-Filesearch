@@ -62,7 +62,10 @@ class FilenameValidator:
             if re.search(pattern, filename):
                 raise InvalidFilenameError(
                     filename,
-                    ("Path traversal detected - filename must not contain " "path components"),
+                    (
+                        "Path traversal detected - filename must not contain "
+                        "path components"
+                    ),
                 )
 
         # Check for directory separators
@@ -70,7 +73,9 @@ class FilenameValidator:
             # Extract basename (last component)
             filename = os.path.basename(filename)
             if not filename:
-                raise InvalidFilenameError(filename, "Invalid path - no filename component")
+                raise InvalidFilenameError(
+                    filename, "Invalid path - no filename component"
+                )
 
         # Check for hidden files (starting with .)
         if filename.startswith("."):
@@ -114,7 +119,9 @@ class FilenameValidator:
         ]
         name_without_ext = os.path.splitext(filename)[0].upper()
         if name_without_ext in reserved_names:
-            raise InvalidFilenameError(filename, f"Reserved filename: {name_without_ext}")
+            raise InvalidFilenameError(
+                filename, f"Reserved filename: {name_without_ext}"
+            )
 
         return filename
 
@@ -236,7 +243,9 @@ class SearchQueryValidator:
         if strict:
             for pattern in cls.SUSPICIOUS_PATTERNS:
                 if re.search(pattern, query, re.IGNORECASE):
-                    raise InvalidSearchQueryError(query, "Query contains suspicious patterns")
+                    raise InvalidSearchQueryError(
+                        query, "Query contains suspicious patterns"
+                    )
 
         return query
 
@@ -301,7 +310,9 @@ class ConfigValidator:
         return value
 
     @staticmethod
-    def validate_float_range(value: float, name: str, min_value: float, max_value: float) -> float:
+    def validate_float_range(
+        value: float, name: str, min_value: float, max_value: float
+    ) -> float:
         """
         Validate float value within range
 
@@ -463,7 +474,9 @@ def validate_upload_file(
     return validated_filename, mime_valid
 
 
-def validate_search_request(query: str, max_results: Optional[int] = None) -> Tuple[str, int]:
+def validate_search_request(
+    query: str, max_results: Optional[int] = None
+) -> Tuple[str, int]:
     """
     Validate search request parameters
 

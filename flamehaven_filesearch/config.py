@@ -4,7 +4,10 @@ Configuration management for FLAMEHAVEN FileSearch
 
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+if TYPE_CHECKING:
+    from .cache import AbstractSearchCache
 
 
 @dataclass
@@ -118,12 +121,18 @@ class Config:
 
                 logger = logging.getLogger(__name__)
                 logger.warning(
-                    "Failed to initialize Redis cache (%s). Falling back to memory cache.", e
+                    "Failed to initialize Redis cache (%s). "
+                    "Falling back to memory cache.",
+                    e,
                 )
-                return SearchResultCache(maxsize=self.cache_max_size, ttl=self.cache_ttl_sec)
+                return SearchResultCache(
+                    maxsize=self.cache_max_size, ttl=self.cache_ttl_sec
+                )
         else:
             # Default to in-memory cache
-            return SearchResultCache(maxsize=self.cache_max_size, ttl=self.cache_ttl_sec)
+            return SearchResultCache(
+                maxsize=self.cache_max_size, ttl=self.cache_ttl_sec
+            )
 
     @classmethod
     def from_env(cls) -> "Config":

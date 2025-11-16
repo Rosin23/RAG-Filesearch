@@ -51,7 +51,9 @@ def test_sanitize_filename_removes_invalid_sequences():
 
 def test_file_size_validator_checks_limit():
     with pytest.raises(FileSizeExceededError):
-        FileSizeValidator.validate_file_size(3 * 1024 * 1024, max_size_mb=1, filename="big.txt")
+        FileSizeValidator.validate_file_size(
+            3 * 1024 * 1024, max_size_mb=1, filename="big.txt"
+        )
 
     assert FileSizeValidator.bytes_to_mb(1048576) == 1.0
 
