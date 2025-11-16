@@ -66,40 +66,8 @@ def key_manager(temp_db, test_api_key, monkeypatch):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
-    # Create tables if not exist
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS api_keys (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            key_hash TEXT NOT NULL UNIQUE,
-            user_id TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            last_used TEXT,
-            expires_at TEXT,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            rate_limit_per_minute INTEGER NOT NULL DEFAULT 100,
-            permissions TEXT NOT NULL,
-            metadata TEXT
-        )
-    """
-    )
-
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS api_key_usage (
-            id TEXT PRIMARY KEY,
-            api_key_id TEXT NOT NULL,
-            request_id TEXT NOT NULL,
-            endpoint TEXT NOT NULL,
-            method TEXT NOT NULL,
-            status_code INTEGER,
-            duration_ms REAL,
-            timestamp TEXT NOT NULL,
-            FOREIGN KEY(api_key_id) REFERENCES api_keys(id)
-        )
-    """
-    )
+    # Tables already created by manager._ensure_db(), just verify
+    # No need to recreate - manager already initialized the schema
 
     # Insert test key (use SHA256 hash for consistency)
     import hashlib
@@ -128,6 +96,10 @@ def key_manager(temp_db, test_api_key, monkeypatch):
     conn.commit()
     conn.close()
 
+    # Set as global singleton BEFORE yielding
+    # This ensures all get_key_manager() calls use this instance
+    auth_module._key_manager = manager
+
     yield manager
 
     # Cleanup: close DB connections
@@ -155,7 +127,8 @@ class AuthenticatedTestClient(TestClient):
 
     def request(self, method, url, **kwargs):
         """Override request to add authentication header"""
-        if "headers" not in kwargs:
+        # Handle None or missing headers
+        if "headers" not in kwargs or kwargs["headers"] is None:
             kwargs["headers"] = {}
 
         # Add API key for protected endpoints
@@ -172,10 +145,7 @@ def authenticated_client(test_api_key, temp_db, monkeypatch, key_manager):
     monkeypatch.setenv("FLAMEHAVEN_API_KEYS_DB", temp_db)
     monkeypatch.setenv("FLAMEHAVEN_ADMIN_KEY", "admin_test_key_12345")
 
-    # Reset global singleton in security module too
-    import flamehaven_filesearch.auth as auth_module
-
-    auth_module._key_manager = key_manager
+    # Singleton already set by key_manager fixture
 
     return AuthenticatedTestClient(app, api_key=test_api_key)
 
@@ -200,10 +170,7 @@ def admin_client(test_api_key, temp_db, monkeypatch, key_manager):
     monkeypatch.setenv("FLAMEHAVEN_API_KEYS_DB", temp_db)
     monkeypatch.setenv("FLAMEHAVEN_ADMIN_KEY", admin_key)
 
-    # Reset global singleton
-    import flamehaven_filesearch.auth as auth_module
-
-    auth_module._key_manager = key_manager
+    # Singleton already set by key_manager fixture
 
     return AuthenticatedTestClient(app, api_key=test_api_key)
 
