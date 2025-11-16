@@ -119,6 +119,28 @@ async def dashboard(request: Request):
         by_endpoint.items(), key=lambda x: x[1], reverse=True
     )[:5]
 
+    # Build keys HTML table rows
+    if keys_data:
+        rows = []
+        for k in keys_data:
+            key_id = k['id']
+            button_onclick = f"revokeKey('{key_id}')"
+            row = (
+                "<tr>"
+                f'<td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">{k["id"]}</code><br><small>{k["name"]}</small></td>'
+                f'<td><span class="badge badge-{k["is_active"].lower()}">{k["is_active"]}</span></td>'
+                f'<td>{k["created_at"]}</td>'
+                f'<td>{k["last_used"]}</td>'
+                f'<td>{k["rate_limit"]}/min</td>'
+                f'<td><small>{k["permissions"]}</small></td>'
+                f'<td><button class="btn-danger" onclick="{button_onclick}">Revoke</button></td>'
+                "</tr>"
+            )
+            rows.append(row)
+        keys_html = "\n".join(rows)
+    else:
+        keys_html = '<tr><td colspan="7" class="empty">No API keys found</td></tr>'
+
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -276,7 +298,6 @@ async def dashboard(request: Request):
 
             <div class="section">
                 <h2>API Keys</h2>
-                {f'''
                 <table>
                     <thead>
                         <tr>
@@ -290,20 +311,9 @@ async def dashboard(request: Request):
                         </tr>
                     </thead>
                     <tbody>
-                        {chr(10).join(f'''
-                        <tr>
-                            <td><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">{k["id"]}</code><br><small>{k["name"]}</small></td>
-                            <td><span class="badge badge-{k["is_active"].lower()}">{k["is_active"]}</span></td>
-                            <td>{k["created_at"]}</td>
-                            <td>{k["last_used"]}</td>
-                            <td>{k["rate_limit"]}/min</td>
-                            <td><small>{k["permissions"]}</small></td>
-                            <td><button class="btn-danger" onclick="revokeKey('{k["id"]}')">Revoke</button></td>
-                        </tr>
-                        ''' for k in keys_data) if keys_data else '<tr><td colspan="7" class="empty">No API keys found</td></tr>'}
+                        {keys_html}
                     </tbody>
                 </table>
-                ''' if keys_data or True else '<p class="empty">No API keys found</p>'}
             </div>
 
             <div class="section">
