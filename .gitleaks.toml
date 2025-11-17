@@ -1,0 +1,77 @@
+# Gitleaks configuration for FLAMEHAVEN FileSearch
+# https://github.com/gitleaks/gitleaks
+
+title = "Gitleaks Config for FLAMEHAVEN FileSearch"
+
+# Allowlist for documentation example keys and test fixtures
+[allowlist]
+description = "Allowlist for known false positives (documentation examples, test fixtures)"
+
+# Regular expressions for safe patterns
+regexes = [
+    # Example API keys in documentation
+    '''sk_live_abc123''',
+    '''sk_live_your_key''',
+    '''sk_test_''',
+    '''your_api_key''',
+    '''your_gemini_key''',
+    '''test_api_key_12345''',
+    '''admin_test_key_12345''',
+    '''key_[a-f0-9]{12}''',  # Example key IDs
+
+    # Placeholder secrets
+    '''your_secret_key_here''',
+    '''replace_with_actual''',
+    '''<your-''',
+    '''\*\*\*''',  # Redacted secrets
+]
+
+# Files to always ignore
+paths = [
+    # Test files with mock secrets
+    '''tests/.*''',
+    '''.*test.*\.py''',
+    '''.*/conftest\.py''',
+
+    # Documentation with examples
+    '''README\.md''',
+    '''CHANGELOG\.md''',
+    '''RELEASE_NOTES.*\.md''',
+    '''DEPLOYMENT_GUIDE.*\.md''',
+    '''docs/.*\.md''',
+
+    # Build/cache artifacts
+    '''\.pytest_cache/.*''',
+    '''htmlcov/.*''',
+    '''__pycache__/.*''',
+    '''\.mypy_cache/.*''',
+]
+
+# Specific file:line:rule combinations to ignore
+[[allowlist.commits]]
+# Commit that added documentation examples
+# If you know specific commit SHAs with false positives, add them here
+# Example: "25b0bb56391a5fabd04ae14535679308e6ca3ca8"
+
+# Override specific rules for documentation
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)(.{0,20})?['"][0-9a-zA-Z]{16,45}['"]'''
+[rules.allowlist]
+paths = [
+    '''README\.md''',
+    '''docs/.*\.md''',
+    '''tests/.*''',
+]
+
+[[rules]]
+id = "curl-auth-header"
+description = "Authorization Header in curl examples"
+regex = '''(?i)authorization:\s*bearer\s+[a-zA-Z0-9._-]+'''
+[rules.allowlist]
+paths = [
+    '''README\.md''',
+    '''.*\.md''',
+    '''docs/.*''',
+]
